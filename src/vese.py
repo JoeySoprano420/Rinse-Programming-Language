@@ -851,3 +851,58 @@ def eval_expr(self, expr):
             raise RuntimeError("Direct FIELD on list requires INDEX first")
     return super().eval_expr(expr)
 
+def match_pattern(self, pattern, value):
+    if pattern.tag == DGM_MAP["VALUE"]:
+        return pattern.value == value
+    elif pattern.tag == DGM_MAP["PATTERN"]:
+        if pattern.value == "tuple":
+            if not isinstance(value, tuple) or len(value) != len(pattern.children):
+                return False
+            return all(self.match_pattern(p, v) for p, v in zip(pattern.children, value))
+        elif pattern.value == "range":
+            start = int(pattern.children[0].value)
+            end = int(pattern.children[1].value)
+            return start <= value <= end
+        elif pattern.value == "wildcard":
+            return True
+        else:
+            return False
+    return False
+
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["SWITCH"]:
+        value = self.eval_expr(stmt.value)
+        executed = False
+        for child in stmt.children:
+            if child.tag == DGM_MAP["CASE"]:
+                pattern, block = child.children
+                if self.match_pattern(pattern, value) and not executed:
+                    executed = True
+                    for s in block.children:
+                        self.exec_stmt(s)
+            elif child.tag == DGM_MAP["DEFAULT"] and not executed:
+                for s in child.children[0].children:
+                    self.exec_stmt(s)
+
+    elif stmt.tag == DGM_MAP["METHOD_DEF"]:
+        struct_name, mname = stmt.value
+        if struct_name not in self.functions:
+            self.functions[struct_name] = {}
+        self.functions[struct_name][mname] = (stmt.children[0], stmt.children[1])
+
+    elif stmt.tag == DGM_MAP["METHOD_CALL"]:
+        base, mname = stmt.value
+        obj = self.get_var(base)
+        params, block = self.functions[type(obj).__name__][mname]
+        self.push_scope()
+        self.set_var("self", obj)
+        for p, a in zip(params.value, stmt.children):
+            self.set_var(p, self.eval_expr(a))
+        for s in block.children:
+            self.exec_stmt(s)
+            if self.return_flag:
+                break
+        obj = self.get_var("self")
+        self.set_var(base, obj)
+        self.pop_scope()
+
