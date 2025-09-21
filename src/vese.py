@@ -1252,3 +1252,21 @@ def exec_stmt(self, stmt):
             task = self.eval_expr(stmt.children[0])
             return task.await_result()
 
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["ASYNC_BLOCK"]:
+        return VeseTask(lambda: [self.exec_stmt(s) for s in stmt.children][-1])
+
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["PARALLEL_BLOCK"]:
+        results = []
+        threads = []
+        for s in stmt.children:
+            task = VeseTask(lambda st=s: self.exec_stmt(st))
+            t = threading.Thread(target=task.run)
+            threads.append((t, task))
+            t.start()
+        for t, task in threads:
+            t.join()
+            results.append(task.result)
+        return results[-1] if results else None
+
