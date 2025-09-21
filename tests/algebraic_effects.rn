@@ -1,0 +1,23 @@
+init main {
+    effect Console {
+        print("What is your name?")
+        let n = read()
+        return "Hello " + n
+    }
+
+    handle Console with {
+        case print(msg) {
+            core_print(msg)   # built-in print
+        }
+        case read() {
+            return "Alice"
+        }
+    } run {
+        effect Console {
+            print("Asking...")
+            let n = read()
+            print("Welcome, " + n)
+            return n
+        }
+    }
+}
