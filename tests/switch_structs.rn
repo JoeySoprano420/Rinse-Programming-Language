@@ -1,0 +1,39 @@
+init main {
+    struct Person {
+        let name: string
+        let age: int
+    }
+
+    let p: Person = ("Alice", 25)
+    print(p.name)
+    print(p.age)
+
+    # field mutation
+    p.age = 26
+    print(p.age)
+
+    # nested struct array
+    let people = array(
+        ("Bob", 30),
+        ("Clara", 40),
+        ("Dan", 50)
+    )
+    print(people[1].name)
+
+    people[1].age = 41
+    print(people[1].age)
+
+    # switch example
+    let x: int = 2
+    switch x {
+        case 1 {
+            print("one")
+        }
+        case 2 {
+            print("two")
+        }
+        default {
+            print("other")
+        }
+    }
+}
