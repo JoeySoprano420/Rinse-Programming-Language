@@ -1,0 +1,19 @@
+init main {
+    let arr = array(10, 20, 30, 40)
+
+    print(arr[2])        # indexing → 30
+
+    arr[2] = 99          # mutation
+    print(arr)
+
+    let lst = list(1, 2, 3)
+    lst[1] = 42
+    print(lst)
+
+    flow sum_first_two(a) {
+        return a[0] + a[1]
+    }
+
+    print(sum_first_two(arr))
+    print(sum_first_two(lst))
+}
