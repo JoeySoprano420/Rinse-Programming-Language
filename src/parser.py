@@ -165,3 +165,13 @@ def parse_let(self):
     expr = self.parse_expr()   # <-- instead of just NUMBER
     return ASTNode(DGM_MAP["VAR"], (name, typ), [expr])
 
+def parse_if(self):
+    self.eat("IF")
+    cond = self.parse_expr()
+    block = self.parse_block()
+    else_block = None
+    if self.peek()[0] == "ELSE":
+        self.eat("ELSE")
+        else_block = self.parse_block()
+    return ASTNode(DGM_MAP["IF"], None, [cond, block, else_block])
+
