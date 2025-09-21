@@ -43,6 +43,8 @@ DGM_MAP = {
     "FUNC_CALL": "cg",
     "FIELD": "ch"
     "RETURN": "ci"
+        "INDEX": "cj",
+    "ASSIGN": "ck"
    }
 
 class ASTNode:
