@@ -1,0 +1,41 @@
+init main {
+    # Struct with method
+    struct Person {
+        let name: string
+        let age: int
+
+        flow inc_age() {
+            self.age = self.age + 1
+            return self
+        }
+    }
+
+    let p: Person = ("Alice", 20)
+    p.inc_age()
+    print(p.age)   # expect 21
+
+    # Pattern matching
+    let t = (1, 2)
+
+    switch t {
+        case (1, 2) {
+            print("tuple matched")
+        }
+        default {
+            print("no match")
+        }
+    }
+
+    let x: int = 7
+    switch x {
+        case 1 .. 5 {
+            print("range match")
+        }
+        case 6 .. 10 {
+            print("second range match")
+        }
+        case _ {
+            print("wildcard")
+        }
+    }
+}
