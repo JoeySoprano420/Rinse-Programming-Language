@@ -99,3 +99,30 @@ def parse_print(self):
     self.eat("SYMBOL")  # )
     return ASTNode(DGM_MAP["FLOW"], "print", [expr])
 
+# parser.py (extended to handle expressions)
+
+def parse_expr(self):
+    # supports VAR + VAR and VAR + NUMBER for now
+    _, left = self.eat("ID")
+    if self.peek()[0] == "OP":  # e.g. +
+        op = self.eat("OP")[1]
+        kind, right = self.peek()
+        if kind == "ID":
+            _, right = self.eat("ID")
+        elif kind == "NUMBER":
+            _, right = self.eat("NUMBER")
+        else:
+            raise SyntaxError("Expected ID or NUMBER after operator")
+        return ASTNode(DGM_MAP["EXPR"], op, [
+            ASTNode(DGM_MAP["VAR"], left),
+            ASTNode(DGM_MAP["VAR"], right) if isinstance(right, str) else ASTNode(DGM_MAP["VALUE"], right)
+        ])
+    return ASTNode(DGM_MAP["VAR"], left)
+
+def parse_print(self):
+    self.eat("PRINT")
+    self.eat("SYMBOL")  # (
+    expr = self.parse_expr()
+    self.eat("SYMBOL")  # )
+    return ASTNode(DGM_MAP["FLOW"], "print", [expr])
+
