@@ -840,3 +840,49 @@ def parse_pattern(self):
             return ASTNode(DGM_MAP["PATTERN"], name)
     return super().parse_pattern()
 
+def parse_trait(self):
+    self.eat("TRAIT")
+    _, tname = self.eat("ID")
+    type_params = []
+    if self.peek()[1] == "<":
+        self.eat("SYMBOL")
+        while self.peek()[1] != ">":
+            _, pname = self.eat("ID")
+            type_params.append(pname)
+            if self.peek()[1] == ",":
+                self.eat("SYMBOL")
+        self.eat("SYMBOL")
+    parent = None
+    if self.peek()[0] == "EXTENDS":
+        self.eat("EXTENDS")
+        _, parent = self.eat("ID")
+    self.eat("SYMBOL")  # {
+    methods = []
+    while self.peek()[1] != "}":
+        self.eat("FLOW")
+        _, mname = self.eat("ID")
+        self.eat("SYMBOL"); self.eat("SYMBOL")
+        methods.append(mname)
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["GENERIC_TRAIT"], (tname, type_params, parent), methods)
+
+def parse_impl(self):
+    self.eat("IMPL")
+    _, sname = self.eat("ID")
+    _, tname = self.eat("ID")
+    type_args = []
+    if self.peek()[1] == "<":
+        self.eat("SYMBOL")
+        while self.peek()[1] != ">":
+            _, arg = self.eat("ID")
+            type_args.append(arg)
+            if self.peek()[1] == ",":
+                self.eat("SYMBOL")
+        self.eat("SYMBOL")
+    self.eat("SYMBOL")  # {
+    methods = []
+    while self.peek()[1] != "}":
+        methods.append(self.parse_method_def(sname))
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["GENERIC_IMPL"], (sname, tname, type_args), methods)
+
