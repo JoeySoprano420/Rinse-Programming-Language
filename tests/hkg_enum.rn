@@ -1,0 +1,38 @@
+init main {
+    # Algebraic Data Types
+    enum Option<T> {
+        Some(T)
+        None
+    }
+
+    let v: Option<int> = Some(42)
+
+    switch v {
+        case Some(x) {
+            print("Got value:")
+            print(x)
+        }
+        case None {
+            print("Got nothing")
+        }
+    }
+
+    # Higher-Kinded Generics
+    trait Functor<F<_>> {
+        flow fmap(f): F
+    }
+
+    struct Box {
+        let value: int
+    }
+
+    impl Box Functor<Box> {
+        flow fmap(f) {
+            return Box(f(self.value))
+        }
+    }
+
+    let b: Box = (5)
+    let c = b.fmap(x -> x * 3)
+    print(c.value)
+}
