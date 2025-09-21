@@ -1,0 +1,22 @@
+init main {
+    flow fact(n) {
+        if n <= 1 {
+            return 1
+        } else {
+            return n * fact(n - 1)
+        }
+    }
+
+    let x: int = 5
+    print(fact(x))
+
+    struct Point {
+        let x: int
+        let y: int
+    }
+
+    let p: Point = (3, 7)
+    print(p.x + p.y)
+
+    tuple(10, 20, 30)
+}
