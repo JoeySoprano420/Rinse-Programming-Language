@@ -1172,3 +1172,15 @@ def eval_expr(self, node):
         return loop(0, {})
     return super().eval_expr(node)
 
+def run_io(self, io):
+    return io["run"]()
+
+def run_state(self, state, init):
+    return state["run"](init)
+
+def run_reader(self, reader, env):
+    return reader["run"](env)
+
+def run_writer(self, writer):
+    return (writer["value"], writer["log"])
+
