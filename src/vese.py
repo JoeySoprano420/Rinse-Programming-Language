@@ -1059,3 +1059,20 @@ class VESE:
 def construct_variant(self, ename, vname, values):
     return {"__enum__": ename, "__variant__": vname, "fields": values}
 
+def match_pattern(self, pattern, value):
+    if isinstance(value, dict) and "__enum__" in value:
+        # variant pattern: e.g. Cons(h,t)
+        if isinstance(pattern.value, tuple) and pattern.value[0] == "struct":
+            _, vname = pattern.value
+            if value["__variant__"] != vname:
+                return False
+            for child, field in zip(pattern.children, value["fields"]):
+                if child.value == "wildcard":
+                    continue
+                elif self.is_identifier(child.value):
+                    self.set_var(child.value, field)
+                elif not self.match_pattern(child, field):
+                    return False
+            return True
+    return super().match_pattern(pattern, value)
+
