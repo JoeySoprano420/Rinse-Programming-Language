@@ -8,7 +8,9 @@ Rinse/
  │   ├─ vese.py
  │   └─ rinsec.py
  ├─ stdlib/
- │   └─ io.rn
+ │   └─ algebra.rn
  ├─ tests/
- │   └─ hello.rn
+ │   ├─ arith_full.rn
+ │   ├─ expr_assign.rn
+ │   └─ control_structs.rn
  └─ README.md
