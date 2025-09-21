@@ -251,3 +251,41 @@ def gen_nasm(ast):
     lines.append("    ret")
     return "\n".join(lines)
 
+
+- **Structs/Tuples/Lists**:  
+- Represented in VESE as Python dicts/lists.  
+- NASM representation is abstracted to “heap-like” allocations.  
+
+- **Proofs**:  
+- Compile to conditionals, but with an assertion that halts VESE if false.  
+
+---
+
+# 🔹 VESE Runtime Extensions (sketch)
+
+```python
+elif op == "cmp":
+ reg1, reg2 = parts[1].strip(","), parts[2]
+ self.flags["cmp"] = self.registers[reg1] - self.registers.get(reg2, int(reg2))
+
+elif op == "jg":
+ if self.flags["cmp"] > 0:
+     self.pc = self.labels[parts[1]]
+
+elif op == "jl":
+ if self.flags["cmp"] < 0:
+     self.pc = self.labels[parts[1]]
+
+elif op == "je":
+ if self.flags["cmp"] == 0:
+     self.pc = self.labels[parts[1]]
+
+elif op == "pow":
+ base, exp = self.registers["eax"], self.registers["ebx"]
+ self.registers["eax"] = pow(base, exp)
+
+elif op == "assert":
+ cond = self.stack.pop()
+ if not cond:
+     raise AssertionError("Proof failed")
+
