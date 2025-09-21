@@ -958,3 +958,22 @@ def parse_do(self):
     self.eat("SYMBOL")
     return ASTNode(DGM_MAP["DO_BLOCK"], None, binds + ([ASTNode(DGM_MAP["RETURN"], None, [ret_expr])] if ret_expr else []))
 
+def parse_for(self):
+    self.eat("FOR")
+    self.eat("SYMBOL")  # {
+    binds = []
+    yield_expr = None
+    while self.peek()[1] != "}":
+        if self.peek()[0] == "ID" and self.lookahead()[1] == "<-":
+            _, var = self.eat("ID")
+            self.eat("OP")
+            expr = self.parse_expr()
+            binds.append(ASTNode(DGM_MAP["MONAD_BIND"], var, [expr]))
+        elif self.peek()[0] == "YIELD":
+            self.eat("YIELD")
+            yield_expr = self.parse_expr()
+        else:
+            raise SyntaxError(f"Unexpected in for block {self.peek()}")
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["FOR_BLOCK"], None, binds + [ASTNode(DGM_MAP["MONAD_YIELD"], None, [yield_expr])])
+
