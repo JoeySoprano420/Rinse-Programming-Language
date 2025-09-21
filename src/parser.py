@@ -977,3 +977,22 @@ def parse_for(self):
     self.eat("SYMBOL")
     return ASTNode(DGM_MAP["FOR_BLOCK"], None, binds + [ASTNode(DGM_MAP["MONAD_YIELD"], None, [yield_expr])])
 
+def parse_list_comprehension(self):
+    self.eat("SYMBOL")  # [
+    expr = self.parse_expr()
+    self.eat("OP")  # |
+    binds = []
+    cond = None
+    while self.peek()[1] != "]":
+        if self.peek()[0] == "ID" and self.lookahead()[1] == "<-":
+            _, var = self.eat("ID")
+            self.eat("OP")  # <-
+            source = self.parse_expr()
+            binds.append(ASTNode(DGM_MAP["MONAD_BIND"], var, [source]))
+        elif self.peek()[0] == "ID" or self.peek()[0] == "NUMBER":
+            cond = self.parse_expr()
+        if self.peek()[1] == ",":
+            self.eat("SYMBOL")
+    self.eat("SYMBOL")  # ]
+    return ASTNode("LIST_COMPREHENSION", None, [expr] + binds + ([cond] if cond else []))
+
