@@ -302,3 +302,65 @@ def parse_nest(self):
     block = self.parse_block()
     return ASTNode(DGM_MAP["NEST"], None, [block])
 
+def parse_stmt(self):
+    kind, _ = self.peek()
+    if kind == "LET":
+        return self.parse_let()
+    elif kind == "PRINT":
+        return self.parse_print()
+    elif kind == "IF":
+        return self.parse_if()
+    elif kind == "FOR":
+        return self.parse_for()
+    elif kind == "WHILE":
+        return self.parse_while()
+    elif kind == "NEST":
+        return self.parse_nest()
+    elif kind == "FLOW":
+        return self.parse_func_def()
+    elif kind == "ID" and self.tokens[self.pos+1][0] == "SYMBOL" and self.tokens[self.pos+1][1] == "(":
+        return self.parse_func_call()
+    else:
+        raise SyntaxError(f"Unknown stmt {kind}")
+
+def parse_func_def(self):
+    self.eat("FLOW")
+    _, name = self.eat("ID")
+    self.eat("SYMBOL")  # (
+    params = []
+    while self.peek()[1] != ")":
+        _, pname = self.eat("ID")
+        if self.peek()[1] == ",":
+            self.eat("SYMBOL")
+        params.append(pname)
+    self.eat("SYMBOL")  # )
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["FUNC_DEF"], name, [ASTNode("params", params), block])
+
+def parse_func_call(self):
+    _, name = self.eat("ID")
+    self.eat("SYMBOL")  # (
+    args = []
+    while self.peek()[1] != ")":
+        args.append(self.parse_expr())
+        if self.peek()[1] == ",":
+            self.eat("SYMBOL")
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["FUNC_CALL"], name, args)
+
+def parse_factor(self):
+    kind, val = self.peek()
+    if kind == "ID":
+        _, name = self.eat("ID")
+        # field access like p.x
+        if self.peek()[1] == ".":
+            self.eat("SYMBOL")
+            _, field = self.eat("ID")
+            return ASTNode(DGM_MAP["FIELD"], (name, field))
+        return ASTNode(DGM_MAP["VAR"], name)
+    elif kind == "NUMBER":
+        _, num = self.eat("NUMBER")
+        return ASTNode(DGM_MAP["VALUE"], num)
+    else:
+        raise SyntaxError(f"Unexpected token {self.peek()}")
+
