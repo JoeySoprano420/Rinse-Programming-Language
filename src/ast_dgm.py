@@ -61,6 +61,9 @@ DGM_MAP = {
     "TRAIT_EXTENDS": "cy"
     "GENERIC_TRAIT": "cz",
     "GENERIC_IMPL": "caa"
+    "ENUM_DEF": "cba",
+    "VARIANT": "cbb",
+    "GENERIC_HIGHER": "cbc"
    }
 
 class ASTNode:
