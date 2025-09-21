@@ -1,0 +1,51 @@
+init main {
+    # IO Effect
+    let io_prog = effect IO {
+        print("Hello from IO")
+        return 123
+    }
+    print("IO result:")
+    print(io_prog.run())
+
+    # State Effect
+    let st_prog = effect State<int> {
+        let a = get()
+        put(a + 10)
+        let b = get()
+        return a + b
+    }
+    let (val, final) = st_prog.run(5)
+    print("State result:")
+    print(val)
+    print("Final state:")
+    print(final)
+
+    # Reader Effect
+    let r_prog = effect Reader<string> {
+        let who = ask()
+        return "Hi, " + who
+    }
+    print(r_prog.run("Shay"))
+
+    # Writer Effect
+    let w_prog = effect Writer<List<string>> {
+        tell("Booting...")
+        let x = 7
+        tell("After seven")
+        return x * 2
+    }
+    print("Writer value:")
+    print(w_prog.value)
+    print("Writer logs:")
+    flow print_logs(logs: List<string>) {
+        switch logs {
+            case Nil {}
+            case Cons(h, t) {
+                print(h)
+                print_logs(t)
+            }
+        }
+    }
+    print_logs(w_prog.log)
+}
+
