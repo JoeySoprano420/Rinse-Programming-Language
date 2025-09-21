@@ -939,3 +939,22 @@ def parse_trait(self):
     self.eat("SYMBOL")
     return ASTNode(DGM_MAP["GENERIC_HIGHER"], (tname, type_params), methods)
 
+def parse_do(self):
+    self.eat("DO")
+    self.eat("SYMBOL")  # {
+    binds = []
+    ret_expr = None
+    while self.peek()[1] != "}":
+        if self.peek()[0] == "ID" and self.lookahead()[1] == "<-":
+            _, var = self.eat("ID")
+            self.eat("OP")  # <-
+            expr = self.parse_expr()
+            binds.append(ASTNode(DGM_MAP["MONAD_BIND"], var, [expr]))
+        elif self.peek()[0] == "RETURN":
+            self.eat("RETURN")
+            ret_expr = self.parse_expr()
+        else:
+            raise SyntaxError(f"Unexpected in do block {self.peek()}")
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["DO_BLOCK"], None, binds + ([ASTNode(DGM_MAP["RETURN"], None, [ret_expr])] if ret_expr else []))
+
