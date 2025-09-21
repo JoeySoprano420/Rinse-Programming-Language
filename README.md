@@ -229,3 +229,22 @@ _main:
 === VESE Execution ===
 42
 
+## ---
+
+🔹 Expected Run
+
+(Bash)
+
+cd Rinse/src
+python rinsec.py ../tests/arith_full.rn
+
+Output:
+
+=== VESE Execution ===
+16
+8
+48
+3
+
+## -----
+
