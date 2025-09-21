@@ -1,0 +1,48 @@
+init main {
+    # IO
+    let io = IO(() -> 100)
+    print("IO demo:")
+    print(io.run())
+
+    # State
+    flow inc(): State<int,int> {
+        return State(s -> (s, s+1))
+    }
+
+    let st_prog = do {
+        a <- inc()
+        b <- inc()
+        return a + b
+    }
+
+    let (v, st) = st_prog.run(0)
+    print("State result:")
+    print(v)
+    print("Final state:")
+    print(st)
+
+    # Reader
+    flow ask(): Reader<string,string> {
+        return Reader(r -> r)
+    }
+
+    let greet = do {
+        n <- ask()
+        return "Hi, " + n
+    }
+
+    print(greet.run("Shay"))
+
+    # Writer
+    let prog = do {
+        _ <- tell("Boot")
+        x <- Writer(7, Nil)
+        _ <- tell("Step")
+        return x * 2
+    }
+
+    print("Writer value:")
+    print(prog.value)
+    print("Writer logs:")
+    print_logs(prog.log)
+}
