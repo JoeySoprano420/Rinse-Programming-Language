@@ -575,3 +575,61 @@ class VESE:
             if op == "==": return left == right
             if op == "!=": return left != right
 
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["VAR"]:
+        name, _ = stmt.value
+        self.set_var(name, self.eval_expr(stmt.children[0]))
+    elif stmt.tag == DGM_MAP["ASSIGN"]:
+        if len(stmt.children) == 1:
+            # simple assignment x = expr
+            value = self.eval_expr(stmt.children[0])
+            self.set_var(stmt.value, value)
+        else:
+            # arr[index] = expr
+            index = self.eval_expr(stmt.children[0])
+            value = self.eval_expr(stmt.children[1])
+            arr = self.get_var(stmt.value)
+            if not isinstance(arr, list):
+                raise TypeError(f"{stmt.value} is not indexable")
+            arr[index] = value
+            self.set_var(stmt.value, arr)
+    elif stmt.tag == DGM_MAP["FLOW"] and stmt.value == "print":
+        print(self.eval_expr(stmt.children[0]))
+    # ... keep the rest as before
+
+def eval_expr(self, expr):
+    if expr.tag == DGM_MAP["VAR"]:
+        return self.get_var(expr.value)
+    elif expr.tag == DGM_MAP["VALUE"]:
+        return expr.value
+    elif expr.tag == DGM_MAP["BOOL"]:
+        return expr.value
+    elif expr.tag == DGM_MAP["INDEX"]:
+        arr = self.get_var(expr.value)
+        idx = self.eval_expr(expr.children[0])
+        return arr[idx]
+    elif expr.tag == DGM_MAP["TUPLE"]:
+        return tuple(self.eval_expr(e) for e in expr.children)
+    elif expr.tag == DGM_MAP["LIST"]:
+        return [self.eval_expr(e) for e in expr.children]
+    elif expr.tag == DGM_MAP["ARRAY"]:
+        return [self.eval_expr(e) for e in expr.children]
+    elif expr.tag == DGM_MAP["EXPR"]:
+        op = expr.value
+        if op == "not":
+            return not self.eval_expr(expr.children[0])
+        l = self.eval_expr(expr.children[0])
+        r = self.eval_expr(expr.children[1])
+        if op == "+": return l + r
+        if op == "-": return l - r
+        if op == "*": return l * r
+        if op == "/": return l // r
+        if op == "and": return l and r
+        if op == "or": return l or r
+        if op == "<": return l < r
+        if op == "<=": return l <= r
+        if op == ">": return l > r
+        if op == ">=": return l >= r
+        if op == "==": return l == r
+        if op == "!=": return l != r
+
