@@ -1,6 +1,6 @@
 🌊 Rinse Programming Language
 
-“Noiseless. Hapless. Zero-cost. Progressive Process.”
+“Noiseless. Gapless. Zero-cost. Progressive Process.”
 
 🌊⚡ **The Rinse Programming Language: A Grand Unified Overview**
 *"Map. Transpose. Run. Elegance without Mess."*
