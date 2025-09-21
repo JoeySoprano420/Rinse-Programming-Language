@@ -996,3 +996,18 @@ def parse_list_comprehension(self):
     self.eat("SYMBOL")  # ]
     return ASTNode("LIST_COMPREHENSION", None, [expr] + binds + ([cond] if cond else []))
 
+def parse_effect(self):
+    self.eat("EFFECT")
+    _, mname = self.eat("ID")
+    tparam = None
+    if self.peek()[1] == "<":
+        self.eat("SYMBOL")
+        _, tparam = self.eat("ID")
+        self.eat("SYMBOL")
+    self.eat("SYMBOL")  # {
+    body = []
+    while self.peek()[1] != "}":
+        body.append(self.parse_stmt())
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["EFFECT_BLOCK"], (mname, tparam), body)
+
