@@ -1208,3 +1208,14 @@ def exec_stmt(self, stmt):
         else:
             raise Exception(f"Unhandled effect operation {eff_name}")
 
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["HANDLER_DEF"]:
+        ename = stmt.value
+        old_handler = self.current_handler.copy()
+        for case in stmt.children[:-1]:
+            opname, params = case.value
+            self.current_handler[opname] = (params, case.children)
+        for s in stmt.children[-1:]:
+            self.exec_stmt(s)
+        self.current_handler = old_handler
+
