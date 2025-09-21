@@ -1,0 +1,33 @@
+rinse-lang/
+│
+├── CMakeLists.txt          # build system (cross-platform)
+├── README.md               # project intro
+├── LICENSE                 # open license
+├── starbox/                # package manager
+│   ├── starbox.py
+│   └── lock.dgm            # dodecagram lockfile
+│
+├── happystance/            # future marketplace
+│   └── placeholder.md
+│
+├── rinsec/                 # main compiler
+│   ├── __init__.py
+│   ├── lexer.py            # tokenize .rns source
+│   ├── parser.py           # build dodecagram AST
+│   ├── ast.py              # AST nodes (base-12)
+│   ├── codegen_llvm.py     # LLVM IR emitter
+│   ├── codegen_nasm.py     # NASM emitter
+│   ├── vese_runtime.py     # Virtual Execution Simulated Env
+│   └── main.py             # CLI entrypoint (rinsec)
+│
+├── stdlib/                 # standard library
+│   ├── io.rns
+│   ├── math.rns
+│   └── net.rns
+│
+├── tests/                  # test programs
+│   ├── hello.rns
+│   └── counter.rns
+│
+└── scripts/
+    └── rinsefmt.py         # superior elegance formatter
