@@ -662,3 +662,42 @@ def parse_pattern(self):
     else:
         raise SyntaxError(f"Unexpected pattern token {self.peek()}")
 
+def parse_struct(self):
+    self.eat("STRUCT")
+    _, name = self.eat("ID")
+    self.eat("SYMBOL")  # {
+    fields, methods = [], []
+    while self.peek()[1] != "}":
+        if self.peek()[0] == "LET":
+            fields.append(self.parse_let())
+        elif self.peek()[0] == "FLOW":
+            methods.append(self.parse_method_def(name))
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["STRUCT"], name, fields + methods)
+
+def parse_method_def(self, struct_name):
+    self.eat("FLOW")
+    _, mname = self.eat("ID")
+    self.eat("SYMBOL")  # (
+    params = []
+    while self.peek()[1] != ")":
+        _, pname = self.eat("ID")
+        if self.peek()[1] == ",":
+            self.eat("SYMBOL")
+        params.append(pname)
+    self.eat("SYMBOL")  # )
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["METHOD_DEF"], (struct_name, mname), [ASTNode("params", params), block])
+
+def parse_method_call(self, base):
+    self.eat("SYMBOL")  # .
+    _, mname = self.eat("ID")
+    self.eat("SYMBOL")  # (
+    args = []
+    while self.peek()[1] != ")":
+        args.append(self.parse_expr())
+        if self.peek()[1] == ",":
+            self.eat("SYMBOL")
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["METHOD_CALL"], (base, mname), args)
+
