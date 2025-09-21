@@ -5,9 +5,7 @@ import re
 
 KEYWORDS = {
     "init", "process", "item", "flow",
-    "let", "print", "parallel", "is", "return"
-    "init", "process", "item", "flow", "let", "print",
-    "parallel", "is", "return",
+    "let", "print", "parallel", "is", "return",
     "if", "else", "struct", "tuple", "list", "array", "nest", "proof",
     "true", "false"
 }
