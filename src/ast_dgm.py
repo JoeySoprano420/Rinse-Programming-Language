@@ -64,6 +64,10 @@ DGM_MAP = {
     "ENUM_DEF": "cba",
     "VARIANT": "cbb",
     "GENERIC_HIGHER": "cbc"
+    "DO_BLOCK": "cbd",
+    "FOR_BLOCK": "cbe",
+    "MONAD_BIND": "cbf",
+    "MONAD_YIELD": "cbg"
    }
 
 class ASTNode:
