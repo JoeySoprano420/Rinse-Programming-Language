@@ -17,6 +17,10 @@ DGM_MAP = {
     "IF": "c1",
     "ELSE": "c2",
     "BOOL": "c3",
+    "STRUCT": "c4",    
+    "IF": "c1",
+    "ELSE": "c2",
+    "BOOL": "c3",
     "STRUCT": "c4",
     "TUPLE": "c5",
     "LIST": "c6",
@@ -25,6 +29,14 @@ DGM_MAP = {
     "DERIVE": "c9",
     "POLY": "ca",
     "PROOF": "cb",
+    "TUPLE": "c5",
+    "LIST": "c6",
+    "ARRAY": "c7",
+    "NEST": "c8",
+    "DERIVE": "c9",
+    "POLY": "ca",
+    "PROOF": "cb",
+    
 })
 
 }
