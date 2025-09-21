@@ -610,5 +610,55 @@ def parse_default(self):
     block = self.parse_block()
     return ASTNode(DGM_MAP["DEFAULT"], None, [block])
 
+def parse_switch(self):
+    self.eat("SWITCH")
+    expr = self.parse_expr()
+    self.eat("SYMBOL")  # {
+    cases = []
+    default_block = None
+    while self.peek()[1] != "}":
+        if self.peek()[0] == "CASE":
+            cases.append(self.parse_case())
+        elif self.peek()[0] == "DEFAULT":
+            default_block = self.parse_default()
+        else:
+            raise SyntaxError(f"Unexpected in switch: {self.peek()}")
+    self.eat("SYMBOL")  # }
+    return ASTNode(DGM_MAP["SWITCH"], expr, cases + ([default_block] if default_block else []))
 
+def parse_case(self):
+    self.eat("CASE")
+    pattern = self.parse_pattern()
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["CASE"], None, [pattern, block])
+
+def parse_pattern(self):
+    # tuple pattern: (a, b)
+    if self.peek()[1] == "(":
+        self.eat("SYMBOL")
+        elems = []
+        while self.peek()[1] != ")":
+            elems.append(self.parse_pattern())
+            if self.peek()[1] == ",":
+                self.eat("SYMBOL")
+        self.eat("SYMBOL")
+        return ASTNode(DGM_MAP["PATTERN"], "tuple", elems)
+    # range pattern: 1 .. 5
+    elif self.peek()[0] == "NUMBER":
+        _, start = self.eat("NUMBER")
+        if self.peek()[1] == "..":
+            self.eat("OP")
+            _, end = self.eat("NUMBER")
+            return ASTNode(DGM_MAP["PATTERN"], "range", [ASTNode(DGM_MAP["VALUE"], start), ASTNode(DGM_MAP["VALUE"], end)])
+        return ASTNode(DGM_MAP["VALUE"], start)
+    # wildcard
+    elif self.peek()[0] == "UNDERSCORE":
+        self.eat("UNDERSCORE")
+        return ASTNode(DGM_MAP["PATTERN"], "wildcard")
+    # identifier
+    elif self.peek()[0] == "ID":
+        _, name = self.eat("ID")
+        return ASTNode(DGM_MAP["PATTERN"], name)
+    else:
+        raise SyntaxError(f"Unexpected pattern token {self.peek()}")
 
