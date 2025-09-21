@@ -324,3 +324,68 @@ class VESE:
 
         elif op == "scope_pop":
             self.pop_scope()
+
+class VESE:
+    def __init__(self):
+        self.registers = {"eax": 0, "ebx": 0, "ecx": 0, "edx": 0}
+        self.stack = []
+        self.call_stack = []
+        self.functions = {}
+        self.heap = {}
+        self.scope_stack = [{}]
+
+    def push_scope(self):
+        self.scope_stack.append({})
+    def pop_scope(self):
+        self.scope_stack.pop()
+    def set_var(self, name, val):
+        self.scope_stack[-1][name] = val
+    def get_var(self, name):
+        for scope in reversed(self.scope_stack):
+            if name in scope:
+                return scope[name]
+        raise NameError(f"Variable {name} not found")
+
+    def define_func(self, name, params, block):
+        self.functions[name] = (params, block)
+
+    def call_func(self, name, args):
+        params, block = self.functions[name]
+        self.push_scope()
+        for p, a in zip(params, args):
+            self.set_var(p, a)
+        result = None
+        for stmt in block:
+            result = self.exec_stmt(stmt)
+        self.pop_scope()
+        return result
+
+    def exec_stmt(self, stmt):
+        if stmt["type"] == "print":
+            val = self.eval_expr(stmt["expr"])
+            print(val)
+        elif stmt["type"] == "let":
+            self.set_var(stmt["name"], self.eval_expr(stmt["expr"]))
+        elif stmt["type"] == "func_def":
+            self.define_func(stmt["name"], stmt["params"], stmt["block"])
+        elif stmt["type"] == "func_call":
+            return self.call_func(stmt["name"], [self.eval_expr(a) for a in stmt["args"]])
+        elif stmt["type"] == "field":
+            obj, field = stmt["base"], stmt["field"]
+            return self.heap[obj][field]
+
+    def eval_expr(self, expr):
+        if expr["type"] == "var":
+            return self.get_var(expr["name"])
+        elif expr["type"] == "value":
+            return expr["val"]
+        elif expr["type"] == "field":
+            return self.exec_stmt(expr)
+        elif expr["type"] == "binop":
+            l = self.eval_expr(expr["left"])
+            r = self.eval_expr(expr["right"])
+            if expr["op"] == "+": return l + r
+            if expr["op"] == "-": return l - r
+            if expr["op"] == "*": return l * r
+            if expr["op"] == "/": return l // r
+
