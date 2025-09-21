@@ -499,3 +499,7 @@ def gen_nasm(ast):
     lines.append("    ret")
     return "\n".join(lines)
 
+elif stmt.tag == DGM_MAP["RETURN"]:
+    emit_expr(stmt.children[0], var_map, lines)
+    lines.append("    ret")
+
