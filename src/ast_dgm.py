@@ -47,6 +47,10 @@ DGM_MAP = {
     "ASSIGN": "ck"
     "BREAK": "cl",
     "CONTINUE": "cm"
+    "SWITCH": "cn",
+    "CASE": "co",
+    "DEFAULT": "cp",
+    "FIELD_ASSIGN": "cq"
    }
 
 class ASTNode:
