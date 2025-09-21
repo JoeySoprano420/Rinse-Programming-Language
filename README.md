@@ -1,175 +1,100 @@
-# Rinse-Programming-Language
 
-# 🌊 Rinse Programming Language
-
-*“Noiseless. Hapless. Zero-cost. Progressive Process.”*
 
 ---
 
-## 1. Philosophy
+## 🔹 Phase 1 – Core Compiler Skeleton (Python)
 
-Rinse is **not compiled, not interpreted, and not linked in the traditional sense**.
-Instead, it is **mapped → transposed → run** through a **VESE (Virtual Execution Simulated Environment)**.
+Directory layout (as you already drafted):
 
-* **SRC → LLVM → NASM → .exe** pipeline
-* Execution occurs inside the VESE, not the host machine.
-* No dangling pointers, no undefined behavior—execution is deterministic.
-* Paradigms: **Progressive-Process-Oriented (PPO)** and **Item-Oriented Programming (IOP)**.
-* Designed for **intrinsically native speed runtime** with **superlative typing**.
+```
+Rinse/
+ ├─ src/
+ │   ├─ lexer.py
+ │   ├─ parser.py
+ │   ├─ ast_dgm.py
+ │   ├─ ir_gen.py
+ │   ├─ nasm_gen.py
+ │   └─ rinsec.py
+ ├─ starbox/
+ ├─ stdlib/
+ │   ├─ io.rn
+ │   ├─ net.rn
+ │   └─ math.rn
+ └─ tests/
+```
 
----
+### `lexer.py`
 
-## 2. Core Features
+Tokenizes `.rn` code:
 
-### AST (Dodecagramatic)
+* Keywords: `init`, `item`, `flow`, `process`, `parallel`, `let`, `print`, `is`
+* Operators: `+`, `-`, `*`, `/`, `=`
+* Literals: ints, strings
+* Symbols: `{`, `}`, `(`, `)`, `:` , `,`
 
-* AST is built using **base-12 dodecagrams (0–9, a, b)**.
-* Every node in the syntax tree corresponds to a dodecagram.
-* Example mapping:
+### `parser.py`
 
-  * `0` = root / program entry
-  * `1` = block
-  * `2` = statement
-  * `3` = expression
-  * `4` = type
-  * `5` = function
-  * `6` = variable
-  * `7` = value
-  * `8` = operator
-  * `9` = flow-control
-  * `a` = item (IOP object)
-  * `b` = CIAMS macro node
+Turns tokens into dodecagram-tagged AST nodes (from `ast_dgm.py`).
 
----
+### `ast_dgm.py`
 
-### Execution Environment
+Defines node classes with **base-12 tags**:
 
-* Runs in **VESE**, a virtual machine with a **strict virtual register-based memory model**.
-* Immutable opcodes + mutable explicit types.
-* **Dualistic spacing** + **parametric indentation**: whitespace affects readability, not meaning.
-* **Implicit user-defined error handling** built-in (exceptions don’t need boilerplate).
-* **Serial ranged scoping** ensures no shadowed variables.
+* `0` → Program
+* `1` → Block
+* `2` → Statement
+* `3` → Expression
+* etc. (per your mapping)
 
----
+### `ir_gen.py`
 
-### Optimizations
+Translates AST → LLVM IR using `llvmlite`.
 
-* Built-in **zero-cost optimizations**:
+### `nasm_gen.py`
 
-  * Peephole optimizations
-  * Loop unrolling
-  * Constant folding
-  * Vectorization
-  * PGO (Profile Guided Optimization)
-  * Tail-call elimination
-  * Lookahead analysis
-* **Automatic index compression**: arrays/lists shrink gaplessly.
-* **Budgeted operators**: operator use has cost awareness to prevent bloat.
+Takes LLVM IR → NASM `.asm` code.
 
----
+### `rinsec.py`
 
-### Type System
+CLI driver:
 
-* **Superlative typed**: all variables must have clear type.
-* **Mutable explicit types** (ints, floats, strings, structs, arrays).
-* **Immutable opcodes**: instructions never mutate.
-* **IOP (Item-Oriented Programming)**: all objects are "items," designed for composability.
-
----
-
-### Syntax (Example)
-
-```rinse
-init main {
-    item Counter {
-        let value: int = 0
-
-        flow inc {
-            value = value + 1
-        }
-
-        flow show {
-            print(value)
-        }
-    }
-
-    let c = Counter()
-    c.inc()
-    c.show()
-}
+```bash
+rinsec hello.rn -o hello.exe
 ```
 
 ---
 
-## 3. Ecosystem
+## 🔹 Phase 2 – VESE (Virtual Execution Simulated Environment)
 
-### Package Manager – **Starbox**
+Instead of running on the host, `.exe` is a containerized VESE binary:
 
-* Lightweight, zero-noise, CIAMS-friendly.
-* Dodecagram-based lockfiles.
-* Installs into VESE sandbox.
+* Register-based model
+* Immutable opcode execution
+* Built-in checkpoints
+* Parallel execution lanes
+* Error handling at block scope
 
-### Marketplace – **Happystance**
-
-* Future marketplace for Starbox packages.
-* Provides curated, obfuscated, black-box outputs.
-* Supports **HTTPS out of the box**.
+Prototype this with a **Python VM** that interprets the NASM-like output.
 
 ---
 
-## 4. Interoperability
+## 🔹 Phase 3 – Starbox Package Manager
 
-* **C ABI + FFI + ISA** built-in.
-* Effortlessly imports/exports bindings:
-
-  * From C
-  * From Python
-  * From HTML
-
-Example:
-
-```rinse
-import c "math.h"
-import python "numpy"
-import html "<script src='dom.js'>"
-
-flow main {
-    let x = c::sqrt(49)
-    let y = python::array([1,2,3])
-    html::render("Hello World")
-}
-```
+* `starbox init` → creates `starbox.lock` (dodecagram lockfile).
+* `starbox add io` → pulls standard lib package into VESE sandbox.
 
 ---
 
-## 5. Semantics
+## 🔹 Phase 4 – rinsefmt Formatter
 
-* **CIAMS (Context Inference Abstraction Macros)**:
-
-  * Auto-expands macros contextually.
-  * Lets user extend language grammar without breaking spec.
-* **Itemization**: All code resolves to item instances.
-* **Virtual checkpoints**: Every block is checkpointed inside VESE.
+* Enforces **dualistic spacing** and **parametric indentation**.
+* Guarantees “superior elegance formatting.”
 
 ---
 
-## 6. Toolchain
+## Example Flow
 
-* **rinsec** = Rinse Compiler
-
-  * Parses SRC → AST (dodecagram)
-  * Emits LLVM IR
-  * Emits NASM
-  * Runs inside VESE (→ `.exe` sandboxed)
-* **starbox** = package manager
-* **happystance** = marketplace (future)
-* **rinsefmt** = formatter (enforces “superior elegance formatting”)
-
----
-
-## 7. Example IR Flow
-
-Rinse code:
+Input (`main.rn`):
 
 ```rinse
 init main {
@@ -179,58 +104,18 @@ init main {
 }
 ```
 
-LLVM IR (simplified):
+Run:
 
-```llvm
-define i32 @main() {
-entry:
-  %x = alloca i32, align 4
-  %y = alloca i32, align 4
-  store i32 12, i32* %x, align 4
-  store i32 30, i32* %y, align 4
-  %1 = load i32, i32* %x, align 4
-  %2 = load i32, i32* %y, align 4
-  %3 = add i32 %1, %2
-  call void @print_int(i32 %3)
-  ret i32 0
-}
+```bash
+rinsec main.rn -o main.exe
 ```
 
-NASM:
+Execution (inside VESE):
 
-```nasm
-section .data
-section .text
-global _main
-_main:
-    mov eax, 12
-    mov ebx, 30
-    add eax, ebx
-    push eax
-    call print_int
-    xor eax, eax
-    ret
 ```
-
----
-
-## 8. What Makes Rinse Unique
-
-✅ **VESE-only execution** (not host-reliant)
-✅ **Dodecagram AST** (base-12)
-✅ **Progressive Process-Oriented + Item-Oriented Programming**
-✅ **Noiseless, zero-cost optimizations** baked-in
-✅ **Superior elegance formatting** enforced
-✅ **Intrinsic parallelism**
-✅ **Built-in C/Python/HTML interop**
-✅ **Minimal knobs, maximal power**
-
----
-
-⚡Run:
-
-(bash)
-
-$ python rinsec/main.py tests/hello.rns
 42
+```
+
+---
+
 
