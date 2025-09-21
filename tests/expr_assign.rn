@@ -1,0 +1,6 @@
+init main {
+    let x: int = 12
+    let y: int = 4
+    let z: int = x * y + 2
+    print(z)
+}
