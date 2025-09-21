@@ -1,0 +1,44 @@
+init main {
+    effect Async {
+        spawn(() -> Task)
+        await(Task)
+    }
+
+    # Simple async/await
+    let task = async {
+        print("Running async...")
+        return 42
+    }
+
+    let result = await task
+    print("Async result:")
+    print(result)
+
+    # Parallel tasks
+    let res = parallel {
+        let a = async { return 10 }
+        let b = async { return 20 }
+        let x = await a
+        let y = await b
+        return x + y
+    }
+
+    print("Parallel sum:")
+    print(res)
+
+    # Nested parallel
+    let deep = parallel {
+        let t1 = async {
+            print("Tree A")
+            return 5
+        }
+        let t2 = async {
+            print("Tree B")
+            return 15
+        }
+        return (await t1) * (await t2)
+    }
+
+    print("Nested parallel product:")
+    print(deep)
+}
