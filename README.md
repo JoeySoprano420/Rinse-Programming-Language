@@ -133,3 +133,14 @@ python rinsec.py ../tests/hello.rn
 
 .rn → Lexer → Parser → Dodecagram AST → LLVM IR → NASM → VESE execution
 
+🔹 Expected Run
+
+(Bash)
+
+cd Rinse/src
+
+python rinsec.py ../tests/hello.rn
+
+## -----
+
+
