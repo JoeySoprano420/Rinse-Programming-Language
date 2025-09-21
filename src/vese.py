@@ -1184,3 +1184,12 @@ def run_reader(self, reader, env):
 def run_writer(self, writer):
     return (writer["value"], writer["log"])
 
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["EFFECT_BLOCK"]:
+        mname, tparam = stmt.value
+        # Wrap body into monad expansion
+        result = None
+        for s in stmt.children:
+            result = self.exec_stmt(s)
+        return result
+
