@@ -737,3 +737,28 @@ def parse_pattern(self):
     else:
         raise SyntaxError(f"Unexpected pattern {self.peek()}")
 
+def parse_trait(self):
+    self.eat("TRAIT")
+    _, tname = self.eat("ID")
+    self.eat("SYMBOL")  # {
+    methods = []
+    while self.peek()[1] != "}":
+        self.eat("FLOW")
+        _, mname = self.eat("ID")
+        self.eat("SYMBOL")  # ()
+        self.eat("SYMBOL")  # )
+        methods.append(mname)
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["TRAIT_DEF"], tname, methods)
+
+def parse_impl(self):
+    self.eat("IMPL")
+    _, sname = self.eat("ID")
+    _, tname = self.eat("ID")
+    self.eat("SYMBOL")  # {
+    methods = []
+    while self.peek()[1] != "}":
+        methods.append(self.parse_method_def(sname))
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["TRAIT_IMPL"], (sname, tname), methods)
+
