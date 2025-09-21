@@ -156,3 +156,12 @@ def parse_factor(self):
     else:
         raise SyntaxError(f"Unexpected token {self.peek()}")
 
+def parse_let(self):
+    self.eat("LET")
+    _, name = self.eat("ID")
+    self.eat("SYMBOL")  # :
+    _, typ = self.eat("ID")
+    self.eat("OP")  # =
+    expr = self.parse_expr()   # <-- instead of just NUMBER
+    return ASTNode(DGM_MAP["VAR"], (name, typ), [expr])
+
