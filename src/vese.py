@@ -1146,3 +1146,29 @@ def monad_bind(self, monad, cont):
                     return self.exec_method(monad, stmt, [cont])
     return monad
 
+def eval_expr(self, node):
+    if node.tag == "LIST_COMPREHENSION":
+        expr = node.children[0]
+        binds = [c for c in node.children[1:] if c.tag == DGM_MAP["MONAD_BIND"]]
+        cond  = node.children[-1] if node.children and node.children[-1].tag not in (DGM_MAP["MONAD_BIND"],) else None
+
+        def loop(i, env):
+            if i >= len(binds):
+                val = self.eval_expr(expr)
+                return self.construct_variant("List", "Cons", [val, self.construct_variant("List", "Nil", [])])
+            var, src = binds[i].value, binds[i].children[0]
+            src_val = self.eval_expr(src)
+            result = self.construct_variant("List", "Nil", [])
+            if src_val["__variant__"] == "Cons":
+                h, t = src_val["fields"]
+                self.set_var(var, h)
+                rest = loop(i+1, env)
+                result = self.concat(result, rest)
+                if t["__variant__"] != "Nil":
+                    self.set_var(var, t)
+                    result = self.concat(result, loop(i, env))
+            return result
+
+        return loop(0, {})
+    return super().eval_expr(node)
+
