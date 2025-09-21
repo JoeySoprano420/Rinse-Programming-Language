@@ -1056,3 +1056,6 @@ class VESE:
             return True
         return super().match_pattern(pattern, value)
 
+def construct_variant(self, ename, vname, values):
+    return {"__enum__": ename, "__variant__": vname, "fields": values}
+
