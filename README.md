@@ -248,3 +248,17 @@ Output:
 
 ## -----
 
+🔹 Expected Run
+
+(Bash)
+
+cd Rinse/src
+python rinsec.py ../tests/expr_assign.rn
+
+Output:
+
+=== VESE Execution ===
+50
+
+(because z = 12 * 4 + 2)
+
