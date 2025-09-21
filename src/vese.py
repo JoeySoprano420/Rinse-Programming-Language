@@ -633,3 +633,103 @@ def eval_expr(self, expr):
         if op == "==": return l == r
         if op == "!=": return l != r
 
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["VAR"]:
+        name, _ = stmt.value
+        self.set_var(name, self.eval_expr(stmt.children[0]))
+
+    elif stmt.tag == DGM_MAP["ASSIGN"]:
+        if len(stmt.children) == 1:
+            # x = expr
+            value = self.eval_expr(stmt.children[0])
+            self.set_var(stmt.value, value)
+        else:
+            # nested indexing assignment
+            target = stmt.value
+            indices = []
+            base = stmt.children[0]
+            if base.tag == DGM_MAP["INDEX"]:
+                arr = self.eval_expr(base.children[0])
+                idx = self.eval_expr(base.children[1])
+                indices.append(idx)
+                while base.children[0].tag == DGM_MAP["INDEX"]:
+                    base = base.children[0]
+                    idx = self.eval_expr(base.children[1])
+                    indices.insert(0, idx)
+                container = self.eval_expr(base.children[0])
+                # walk indices
+                ref = container
+                for i in indices[:-1]:
+                    ref = ref[i]
+                ref[indices[-1]] = self.eval_expr(stmt.children[1])
+                self.set_var(target, container)
+            else:
+                idx = self.eval_expr(stmt.children[0])
+                value = self.eval_expr(stmt.children[1])
+                arr = self.get_var(target)
+                arr[idx] = value
+                self.set_var(target, arr)
+
+    elif stmt.tag == DGM_MAP["FOR"]:
+        var = stmt.value
+        start, end, block = stmt.children
+        s = self.eval_expr(start)
+        e = self.eval_expr(end)
+        for i in range(s, e+1):
+            self.push_scope()
+            self.set_var(var, i)
+            for sstmt in block.children:
+                self.exec_stmt(sstmt)
+                if self.return_flag: break
+            self.pop_scope()
+
+    elif stmt.tag == DGM_MAP["WHILE"]:
+        cond, block = stmt.children
+        while self.eval_expr(cond):
+            self.push_scope()
+            for sstmt in block.children:
+                self.exec_stmt(sstmt)
+                if self.return_flag: break
+            self.pop_scope()
+            if self.return_flag: break
+
+    elif stmt.tag == DGM_MAP["FLOW"] and stmt.value == "print":
+        print(self.eval_expr(stmt.children[0]))
+    # ... rest unchanged ...
+
+def eval_expr(self, expr):
+    if expr.tag == DGM_MAP["VAR"]:
+        return self.get_var(expr.value)
+    elif expr.tag == DGM_MAP["VALUE"]:
+        return expr.value
+    elif expr.tag == DGM_MAP["BOOL"]:
+        return expr.value
+    elif expr.tag == DGM_MAP["INDEX"]:
+        base = self.eval_expr(expr.children[0])
+        idx = self.eval_expr(expr.children[1])
+        return base[idx]
+    elif expr.tag == DGM_MAP["TUPLE"]:
+        return tuple(self.eval_expr(e) for e in expr.children)
+    elif expr.tag == DGM_MAP["LIST"]:
+        return [self.eval_expr(e) for e in expr.children]
+    elif expr.tag == DGM_MAP["ARRAY"]:
+        return [self.eval_expr(e) for e in expr.children]
+    elif expr.tag == DGM_MAP["EXPR"]:
+        op = expr.value
+        if op == "not":
+            return not self.eval_expr(expr.children[0])
+        l = self.eval_expr(expr.children[0])
+        r = self.eval_expr(expr.children[1])
+        if op == "+": return l + r
+        if op == "-": return l - r
+        if op == "*": return l * r
+        if op == "/": return l // r
+        if op == "and": return l and r
+        if op == "or": return l or r
+        if op == "<": return l < r
+        if op == "<=": return l <= r
+        if op == ">": return l > r
+        if op == ">=": return l >= r
+        if op == "==": return l == r
+        if op == "!=": return l != r
+
