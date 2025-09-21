@@ -39,6 +39,9 @@ DGM_MAP = {
     "DERIVE": "c9",
     "POLY": "ca",
     "PROOF": "cb",
+    "FUNC_DEF": "cf",
+    "FUNC_CALL": "cg",
+    "FIELD": "ch"
    }
 
 class ASTNode:
