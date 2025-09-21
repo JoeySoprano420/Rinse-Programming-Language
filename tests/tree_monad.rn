@@ -1,0 +1,38 @@
+init main {
+    enum Tree<T> {
+        Empty
+        Node(T, Tree<T>, Tree<T>)
+    }
+
+    impl Tree Monad<Tree> {
+        flow bind(f) {
+            switch self {
+                case Empty { return Empty }
+                case Node(v, l, r) {
+                    let new_node = f(v)
+                    return Node(new_node, l.bind(f), r.bind(f))
+                }
+            }
+        }
+
+        flow pure(x) { return Node(x, Empty, Empty) }
+    }
+
+    let t: Tree<int> = Node(5, Node(3, Empty, Empty), Node(7, Empty, Empty))
+
+    let res = t.bind(x -> Node(x * 2, Empty, Empty))
+
+    flow inorder(tree: Tree<int>) {
+        switch tree {
+            case Empty {}
+            case Node(v, l, r) {
+                inorder(l)
+                print(v)
+                inorder(r)
+            }
+        }
+    }
+
+    print("Doubled tree inorder:")
+    inorder(res)
+}
