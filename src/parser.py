@@ -175,3 +175,81 @@ def parse_if(self):
         else_block = self.parse_block()
     return ASTNode(DGM_MAP["IF"], None, [cond, block, else_block])
 
+def parse_stmt(self):
+    kind, _ = self.peek()
+    if kind == "LET":
+        return self.parse_let()
+    elif kind == "PRINT":
+        return self.parse_print()
+    elif kind == "IF":
+        return self.parse_if()
+    elif kind == "STRUCT":
+        return self.parse_struct()
+    elif kind == "TUPLE":
+        return self.parse_tuple()
+    elif kind == "LIST":
+        return self.parse_list()
+    elif kind == "ARRAY":
+        return self.parse_array()
+    elif kind == "PROOF":
+        return self.parse_proof()
+    else:
+        raise SyntaxError(f"Unknown stmt {kind}")
+
+def parse_if(self):
+    self.eat("IF")
+    cond = self.parse_expr()
+    block = self.parse_block()
+    else_block = None
+    if self.peek()[0] == "ELSE":
+        self.eat("ELSE")
+        else_block = self.parse_block()
+    return ASTNode(DGM_MAP["IF"], None, [cond, block, else_block])
+
+def parse_struct(self):
+    self.eat("STRUCT")
+    _, name = self.eat("ID")
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["STRUCT"], name, [block])
+
+def parse_tuple(self):
+    self.eat("TUPLE")
+    self.eat("SYMBOL")  # (
+    values = []
+    while self.peek()[1] != ")":
+        expr = self.parse_expr()
+        values.append(expr)
+        if self.peek()[1] == ",":
+            self.eat("SYMBOL")
+    self.eat("SYMBOL")  # )
+    return ASTNode(DGM_MAP["TUPLE"], None, values)
+
+def parse_list(self):
+    self.eat("LIST")
+    self.eat("SYMBOL")
+    values = []
+    while self.peek()[1] != ")":
+        expr = self.parse_expr()
+        values.append(expr)
+        if self.peek()[1] == ",":
+            self.eat("SYMBOL")
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["LIST"], None, values)
+
+def parse_array(self):
+    self.eat("ARRAY")
+    self.eat("SYMBOL")
+    values = []
+    while self.peek()[1] != ")":
+        expr = self.parse_expr()
+        values.append(expr)
+        if self.peek()[1] == ",":
+            self.eat("SYMBOL")
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["ARRAY"], None, values)
+
+def parse_proof(self):
+    self.eat("PROOF")
+    cond = self.parse_expr()
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["PROOF"], None, [cond, block])
