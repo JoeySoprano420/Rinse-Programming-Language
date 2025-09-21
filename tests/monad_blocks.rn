@@ -1,0 +1,54 @@
+init main {
+    enum Option<T> {
+        Some(T)
+        None
+    }
+
+    impl Option Monad<Option> {
+        flow bind(f) {
+            switch self {
+                case Some(x) { return f(x) }
+                case None    { return None }
+            }
+        }
+
+        flow pure(x) { return Some(x) }
+    }
+
+    # do block pipeline
+    let v: Option<int> = Some(5)
+
+    let res = do {
+        x <- v
+        y <- Some(x * 2)
+        z <- Some(y + 1)
+        return z
+    }
+
+    switch res {
+        case Some(n) {
+            print("Do block result:")
+            print(n)
+        }
+        case None {
+            print("Empty")
+        }
+    }
+
+    # for comprehension
+    let res2 = for {
+        a <- Some(2)
+        b <- Some(3)
+    } yield (a + b)
+
+    switch res2 {
+        case Some(m) {
+            print("For comprehension result:")
+            print(m)
+        }
+        case None {
+            print("Empty")
+        }
+    }
+}
+
