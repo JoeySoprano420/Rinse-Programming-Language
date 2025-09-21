@@ -1,0 +1,19 @@
+init main {
+    let x: int = 0
+
+    for i in 0 .. 3 {
+        print(i)
+    }
+
+    while x < 3 {
+        print(x)
+        x = x + 1
+    }
+
+    nest {
+        let y: int = 42
+        print(y)
+    }
+
+    # here y is no longer in scope
+}
