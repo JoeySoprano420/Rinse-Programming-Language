@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rinse-programming-language"
+version = "0.1.0"
+description = "The Rinse Programming Language - A philosophically rich language with dodecagrammatic AST"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+authors = [
+    {name = "JoeySoprano420"}
+]
+keywords = ["compiler", "programming-language", "ast", "llvm", "vm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers", 
+    "Topic :: Software Development :: Compilers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "llvmlite>=0.37.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/JoeySoprano420/Rinse-Programming-Language"
+Repository = "https://github.com/JoeySoprano420/Rinse-Programming-Language.git"
+Issues = "https://github.com/JoeySoprano420/Rinse-Programming-Language/issues"
+
+[project.scripts]
+rinsec = "rinse.rinsec:main"
+
+[tool.setuptools]
+packages = ["rinse"]
