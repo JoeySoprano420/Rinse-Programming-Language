@@ -1091,3 +1091,20 @@ def eval_binop(self, op, left, right):
         raise Exception("No monad bind impl")
     return super().eval_binop(op, left, right)
 
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["DO_BLOCK"]:
+        expr = None
+        for child in stmt.children:
+            if child.tag == DGM_MAP["MONAD_BIND"]:
+                var, monad_expr = child.value, child.children[0]
+                monad_val = self.eval_expr(monad_expr)
+                def cont(x, rest=stmt.children[stmt.children.index(child)+1:]):
+                    self.set_var(var, x)
+                    if rest:
+                        return self.exec_do(rest)
+                    return x
+                expr = self.monad_bind(monad_val, cont)
+            elif child.tag == "RETURN":
+                expr = self.eval_expr(child.children[0])
+        return expr
+
