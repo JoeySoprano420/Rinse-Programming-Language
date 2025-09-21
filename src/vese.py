@@ -1136,3 +1136,13 @@ def monad_bind(self, monad, cont):
                     return self.exec_method(monad, stmt, [cont])
     return monad
 
+def monad_bind(self, monad, cont):
+    if isinstance(monad, dict) and "__enum__" in monad:
+        ename = monad["__enum__"]
+        impl = self.impls.get((ename, "Monad"), None)
+        if impl:
+            for stmt in impl:
+                if stmt.value[1] == "bind":
+                    return self.exec_method(monad, stmt, [cont])
+    return monad
+
