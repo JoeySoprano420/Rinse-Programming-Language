@@ -1,0 +1,41 @@
+init main {
+    struct Person {
+        let name: string
+        let age: int
+    }
+
+    let p: Person = ("Alice", 42)
+
+    switch p {
+        case Person("Alice", a) {
+            print("Alice found with age:")
+            print(a)
+        }
+        case Person(_, y) {
+            print("Someone else, age:")
+            print(y)
+        }
+    }
+
+    trait Eq<T> {
+        flow eq(other: T): bool
+    }
+
+    struct Point {
+        let x: int
+        let y: int
+    }
+
+    impl Point Eq<Point> {
+        flow eq(other: Point): bool {
+            return self.x == other.x and self.y == other.y
+        }
+    }
+
+    let a: Point = (1, 2)
+    let b: Point = (1, 2)
+    let c: Point = (2, 3)
+
+    print(a.eq(b))  # expect true
+    print(a.eq(c))  # expect false
+}
