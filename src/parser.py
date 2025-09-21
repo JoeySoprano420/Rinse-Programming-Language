@@ -701,3 +701,39 @@ def parse_method_call(self, base):
     self.eat("SYMBOL")
     return ASTNode(DGM_MAP["METHOD_CALL"], (base, mname), args)
 
+def parse_pattern(self):
+    if self.peek()[1] == "(":
+        self.eat("SYMBOL")
+        elems = []
+        while self.peek()[1] != ")":
+            elems.append(self.parse_pattern())
+            if self.peek()[1] == ",":
+                self.eat("SYMBOL")
+        self.eat("SYMBOL")
+        return ASTNode(DGM_MAP["PATTERN"], "tuple", elems)
+
+    elif self.peek()[0] == "ID":
+        # could be struct pattern
+        _, name = self.eat("ID")
+        if self.peek()[1] == "(":
+            self.eat("SYMBOL")
+            fields = []
+            while self.peek()[1] != ")":
+                fields.append(self.parse_pattern())
+                if self.peek()[1] == ",":
+                    self.eat("SYMBOL")
+            self.eat("SYMBOL")
+            return ASTNode(DGM_MAP["PATTERN"], ("struct", name), fields)
+        return ASTNode(DGM_MAP["PATTERN"], name)
+
+    elif self.peek()[0] == "NUMBER":
+        _, num = self.eat("NUMBER")
+        return ASTNode(DGM_MAP["VALUE"], num)
+
+    elif self.peek()[0] == "UNDERSCORE":
+        self.eat("UNDERSCORE")
+        return ASTNode(DGM_MAP["PATTERN"], "wildcard")
+
+    else:
+        raise SyntaxError(f"Unexpected pattern {self.peek()}")
+
