@@ -1108,3 +1108,31 @@ def exec_stmt(self, stmt):
                 expr = self.eval_expr(child.children[0])
         return expr
 
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["FOR_BLOCK"]:
+        expr = None
+        for child in stmt.children:
+            if child.tag == DGM_MAP["MONAD_BIND"]:
+                var, monad_expr = child.value, child.children[0]
+                monad_val = self.eval_expr(monad_expr)
+                def cont(x, rest=stmt.children[stmt.children.index(child)+1:]):
+                    self.set_var(var, x)
+                    if rest:
+                        return self.exec_for(rest)
+                    return x
+                expr = self.monad_bind(monad_val, cont)
+            elif child.tag == DGM_MAP["MONAD_YIELD"]:
+                expr = self.eval_expr(child.children[0])
+        return expr
+
+def monad_bind(self, monad, cont):
+    if isinstance(monad, dict) and "__enum__" in monad:
+        ename = monad["__enum__"]
+        impl = self.impls.get((ename, "Monad"), None)
+        if impl:
+            for stmt in impl:
+                if stmt.value[1] == "bind":
+                    # call bind with cont
+                    return self.exec_method(monad, stmt, [cont])
+    return monad
+
