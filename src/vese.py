@@ -966,3 +966,34 @@ class VESE:
             sname, tname = stmt.value
             self.impls[(sname, tname)] = stmt.children
 
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["DESTRUCT"]:
+        val = self.eval_expr(stmt.children[0])
+        if isinstance(stmt.value, list):  # tuple destructure
+            for name, v in zip(stmt.value, val):
+                self.set_var(name, v)
+        elif isinstance(stmt.value, tuple):  # struct destructure
+            struct_name, fields = stmt.value
+            for f, v in zip(fields, val):
+                self.set_var(f, v)
+
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["TRAIT_DEF"]:
+        tname, parent = stmt.value
+        self.traits[tname] = {"methods": stmt.children, "parent": parent}
+
+    elif stmt.tag == DGM_MAP["TRAIT_IMPL"]:
+        sname, tname = stmt.value
+        methods = stmt.children
+        required = list(self.traits[tname]["methods"])
+        # inherit parent's methods if any
+        parent = self.traits[tname]["parent"]
+        while parent:
+            required += self.traits[parent]["methods"]
+            parent = self.traits[parent]["parent"]
+        impl_methods = [m.value[1] for m in methods]
+        for r in required:
+            if r not in impl_methods:
+                raise Exception(f"{sname} missing trait method {r} from {tname}")
+        self.impls[(sname, tname)] = methods
+
