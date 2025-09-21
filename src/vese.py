@@ -1193,3 +1193,18 @@ def exec_stmt(self, stmt):
             result = self.exec_stmt(s)
         return result
 
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["EFFECT_INVOKE"]:
+        eff_name = stmt.value
+        if eff_name in self.current_handler:
+            handler_case = self.current_handler[eff_name]
+            params, block = handler_case
+            self.push_scope()
+            for p, arg in zip(params, stmt.children):
+                self.set_var(p, self.eval_expr(arg))
+            for s in block:
+                self.exec_stmt(s)
+            self.pop_scope()
+        else:
+            raise Exception(f"Unhandled effect operation {eff_name}")
+
