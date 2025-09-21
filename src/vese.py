@@ -1219,3 +1219,36 @@ def exec_stmt(self, stmt):
             self.exec_stmt(s)
         self.current_handler = old_handler
 
+import queue, threading
+
+class VeseTask:
+    def __init__(self, fn):
+        self.fn = fn
+        self.result = None
+        self.done = False
+        self.cond = threading.Condition()
+
+    def run(self):
+        val = self.fn()
+        with self.cond:
+            self.result = val
+            self.done = True
+            self.cond.notify_all()
+
+    def await_result(self):
+        with self.cond:
+            while not self.done:
+                self.cond.wait()
+            return self.result
+
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["EFFECT_INVOKE"]:
+        if stmt.value == "spawn":
+            fn = self.eval_expr(stmt.children[0])
+            task = VeseTask(fn)
+            threading.Thread(target=task.run).start()
+            return task
+        elif stmt.value == "await":
+            task = self.eval_expr(stmt.children[0])
+            return task.await_result()
+
