@@ -504,3 +504,31 @@ def parse_factor(self):
     else:
         raise SyntaxError(f"Unexpected token {self.peek()}")
 
+def parse_factor(self):
+    kind, val = self.peek()
+    if kind == "ID":
+        _, name = self.eat("ID")
+        node = ASTNode(DGM_MAP["VAR"], name)
+        # handle chained indexing
+        while self.peek()[1] == "[":
+            self.eat("SYMBOL")  # [
+            index_expr = self.parse_expr()
+            self.eat("SYMBOL")  # ]
+            node = ASTNode(DGM_MAP["INDEX"], None, [node, index_expr])
+        return node
+    elif kind == "NUMBER":
+        _, num = self.eat("NUMBER")
+        return ASTNode(DGM_MAP["VALUE"], num)
+    elif kind == "TRUE":
+        self.eat("TRUE")
+        return ASTNode(DGM_MAP["BOOL"], True)
+    elif kind == "FALSE":
+        self.eat("FALSE")
+        return ASTNode(DGM_MAP["BOOL"], False)
+    elif kind == "NOT":
+        self.eat("NOT")
+        expr = self.parse_factor()
+        return ASTNode(DGM_MAP["EXPR"], "not", [expr])
+    else:
+        raise SyntaxError(f"Unexpected token {self.peek()}")
+
