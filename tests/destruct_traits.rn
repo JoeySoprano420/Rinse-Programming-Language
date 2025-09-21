@@ -1,0 +1,51 @@
+init main {
+    # Destructuring tuple
+    let (a, b) = (5, 10)
+    print(a)
+    print(b)
+
+    # Struct + destructuring
+    struct Person {
+        let name: string
+        let age: int
+    }
+
+    let Person(n, y) = ("Alice", 30)
+    print(n)
+    print(y)
+
+    # Traits with inheritance
+    trait Speak {
+        flow speak()
+    }
+
+    trait Introduce extends Speak {
+        flow intro()
+    }
+
+    struct Greeter {
+        let msg: string
+
+        flow speak() {
+            print(self.msg)
+        }
+
+        flow intro() {
+            print("Hello, I am a greeter")
+        }
+    }
+
+    impl Greeter Introduce {
+        flow speak() {
+            print(self.msg)
+        }
+
+        flow intro() {
+            print("Nice to meet you")
+        }
+    }
+
+    let g: Greeter = ("Hi!")
+    g.speak()
+    g.intro()
+}
