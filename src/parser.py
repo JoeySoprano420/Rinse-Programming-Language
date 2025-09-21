@@ -1011,3 +1011,38 @@ def parse_effect(self):
     self.eat("SYMBOL")
     return ASTNode(DGM_MAP["EFFECT_BLOCK"], (mname, tparam), body)
 
+def parse_effect_invoke(self):
+    _, fname = self.eat("ID")
+    self.eat("SYMBOL")  # (
+    args = []
+    while self.peek()[1] != ")":
+        args.append(self.parse_expr())
+        if self.peek()[1] == ",":
+            self.eat("SYMBOL")
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["EFFECT_INVOKE"], fname, args)
+
+def parse_handler(self):
+    self.eat("HANDLE")
+    _, ename = self.eat("ID")
+    self.eat("WITH")
+    self.eat("SYMBOL")  # {
+    cases = []
+    while self.peek()[1] != "}":
+        self.eat("CASE")
+        _, opname = self.eat("ID")
+        self.eat("SYMBOL")  # (
+        params = []
+        while self.peek()[1] != ")":
+            _, pname = self.eat("ID")
+            params.append(pname)
+            if self.peek()[1] == ",":
+                self.eat("SYMBOL")
+        self.eat("SYMBOL")
+        block = self.parse_block()
+        cases.append(ASTNode(DGM_MAP["HANDLER_CASE"], (opname, params), block.children))
+    self.eat("SYMBOL")
+    self.eat("RUN")
+    run_block = self.parse_block()
+    return ASTNode(DGM_MAP["HANDLER_DEF"], ename, cases + run_block.children)
+
