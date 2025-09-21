@@ -886,3 +886,34 @@ def parse_impl(self):
     self.eat("SYMBOL")
     return ASTNode(DGM_MAP["GENERIC_IMPL"], (sname, tname, type_args), methods)
 
+def parse_enum(self):
+    self.eat("ENUM")
+    _, ename = self.eat("ID")
+    type_params = []
+    if self.peek()[1] == "<":
+        self.eat("SYMBOL")
+        while self.peek()[1] != ">":
+            _, pname = self.eat("ID")
+            type_params.append(pname)
+            if self.peek()[1] == ",":
+                self.eat("SYMBOL")
+        self.eat("SYMBOL")
+    self.eat("SYMBOL")  # {
+    variants = []
+    while self.peek()[1] != "}":
+        _, vname = self.eat("ID")
+        if self.peek()[1] == "(":
+            self.eat("SYMBOL")
+            fields = []
+            while self.peek()[1] != ")":
+                _, fname = self.eat("ID")
+                fields.append(fname)
+                if self.peek()[1] == ",":
+                    self.eat("SYMBOL")
+            self.eat("SYMBOL")
+            variants.append(ASTNode(DGM_MAP["VARIANT"], (vname, fields)))
+        else:
+            variants.append(ASTNode(DGM_MAP["VARIANT"], (vname, [])))
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["ENUM_DEF"], (ename, type_params), variants)
+
