@@ -1,5 +1,8 @@
 init main {
     let x: int = 12
-    let y: int = 30
+    let y: int = 4
     print(x + y)
+    print(x - y)
+    print(x * y)
+    print(x / y)
 }
