@@ -279,3 +279,48 @@ class VESE:
         elif op == "make_struct":
             name = parts[1]
 
+class VESE:
+    def __init__(self):
+        self.registers = {"eax": 0, "ebx": 0, "ecx": 0, "edx": 0}
+        self.stack = []
+        self.flags = {"cmp": 0}
+        self.labels = {}
+        self.pc = 0
+        self.program = []
+        self.heap = {}
+        self.scope_stack = [{}]  # nested scopes for vars
+
+    def push_scope(self):
+        self.scope_stack.append({})
+
+    def pop_scope(self):
+        self.scope_stack.pop()
+
+    def set_var(self, name, val):
+        self.scope_stack[-1][name] = val
+
+    def get_var(self, name):
+        for scope in reversed(self.scope_stack):
+            if name in scope:
+                return scope[name]
+        raise NameError(f"Variable {name} not found")
+
+    def exec(self, line: str):
+        parts = line.split()
+        op = parts[0]
+
+        # [existing ops...]
+
+        elif op == "inc":
+            reg = parts[1]
+            self.registers[reg] += 1
+
+        elif op == "dec":
+            reg = parts[1]
+            self.registers[reg] -= 1
+
+        elif op == "scope_push":
+            self.push_scope()
+
+        elif op == "scope_pop":
+            self.pop_scope()
