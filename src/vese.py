@@ -1,7 +1,42 @@
 # vese.py — VESE Runtime
-# Executes NASM-like opcodes in a sandbox
+# Simulates NASM-like execution in a sandboxed VM
 
-def run(program):
-    for instr in program:
-        if instr[0] == "print":
-            print(instr[1])
+class VESE:
+    def __init__(self):
+        self.registers = {"eax": 0, "ebx": 0, "ecx": 0, "edx": 0}
+        self.stack = []
+
+    def exec(self, program):
+        for line in program.splitlines():
+            line = line.strip()
+            if not line or line.startswith(";") or line.startswith("section") or line.startswith("global"):
+                continue
+
+            parts = line.split()
+            op = parts[0]
+
+            if op == "mov":
+                reg, val = parts[1].split(",")[0], parts[1].split(",")[1] if "," in parts[1] else parts[1]
+                if "," in line:
+                    reg, val = parts[1].strip(","), parts[2]
+                self.registers[reg] = int(val)
+
+            elif op == "add":
+                reg1 = parts[1].strip(",")
+                reg2 = parts[2]
+                self.registers[reg1] += self.registers.get(reg2, int(reg2))
+
+            elif op == "push":
+                reg = parts[1]
+                self.stack.append(self.registers[reg])
+
+            elif op == "call" and parts[1] == "print_int":
+                val = self.stack.pop()
+                print(val)
+
+            elif op == "xor":
+                reg1, reg2 = parts[1].strip(","), parts[2]
+                self.registers[reg1] = self.registers[reg1] ^ self.registers[reg2]
+
+            elif op == "ret":
+                return 0
