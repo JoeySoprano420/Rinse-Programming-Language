@@ -809,3 +809,45 @@ class VESE:
             return fields
         # ... keep booleans, arithmetic, etc.
 
+def exec_stmt(self, stmt):
+    if stmt.tag == DGM_MAP["SWITCH"]:
+        value = self.eval_expr(stmt.value)
+        matched = False
+        for child in stmt.children:
+            if child.tag == DGM_MAP["CASE"]:
+                match_val = self.eval_expr(child.value)
+                if value == match_val and not matched:
+                    matched = True
+                    for s in child.children[0].children:
+                        self.exec_stmt(s)
+                    break
+            elif child.tag == DGM_MAP["DEFAULT"] and not matched:
+                for s in child.children[0].children:
+                    self.exec_stmt(s)
+
+    elif stmt.tag == DGM_MAP["FIELD_ASSIGN"]:
+        base, field = stmt.value
+        val = self.eval_expr(stmt.children[0])
+        obj = self.get_var(base)
+        if isinstance(obj, dict):
+            obj[field] = val
+            self.set_var(base, obj)
+        else:
+            raise TypeError(f"{base} is not a struct")
+
+    # loop, assign, break/continue remain as before...
+
+def eval_expr(self, expr):
+    if expr.tag == DGM_MAP["INDEX"]:
+        base = self.eval_expr(expr.children[0])
+        idx = self.eval_expr(expr.children[1])
+        return base[idx]
+    elif expr.tag == DGM_MAP["FIELD"]:
+        base, field = expr.value
+        obj = self.get_var(base)
+        if isinstance(obj, dict):
+            return obj[field]
+        elif isinstance(obj, list):  # array of structs
+            raise RuntimeError("Direct FIELD on list requires INDEX first")
+    return super().eval_expr(expr)
+
