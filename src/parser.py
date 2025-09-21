@@ -364,3 +364,31 @@ def parse_factor(self):
     else:
         raise SyntaxError(f"Unexpected token {self.peek()}")
 
+def parse_stmt(self):
+    kind, _ = self.peek()
+    if kind == "LET":
+        return self.parse_let()
+    elif kind == "PRINT":
+        return self.parse_print()
+    elif kind == "IF":
+        return self.parse_if()
+    elif kind == "FOR":
+        return self.parse_for()
+    elif kind == "WHILE":
+        return self.parse_while()
+    elif kind == "NEST":
+        return self.parse_nest()
+    elif kind == "FLOW":
+        return self.parse_func_def()
+    elif kind == "RETURN":
+        return self.parse_return()
+    elif kind == "ID" and self.tokens[self.pos+1][0] == "SYMBOL" and self.tokens[self.pos+1][1] == "(":
+        return self.parse_func_call()
+    else:
+        raise SyntaxError(f"Unknown stmt {kind}")
+
+def parse_return(self):
+    self.eat("RETURN")
+    expr = self.parse_expr()
+    return ASTNode(DGM_MAP["RETURN"], None, [expr])
+
