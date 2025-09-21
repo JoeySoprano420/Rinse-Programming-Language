@@ -1,0 +1,50 @@
+init main {
+    enum List<T> {
+        Nil
+        Cons(T, List<T>)
+    }
+
+    flow concat(a: List<int>, b: List<int>): List<int> {
+        switch a {
+            case Nil { return b }
+            case Cons(h, t) { return Cons(h, concat(t, b)) }
+        }
+    }
+
+    impl List Monad<List> {
+        flow bind(f) {
+            switch self {
+                case Nil { return Nil }
+                case Cons(h, t) {
+                    let mapped = f(h)
+                    return concat(mapped, t.bind(f))
+                }
+            }
+        }
+
+        flow pure(x) { return Cons(x, Nil) }
+    }
+
+    let xs: List<int> = Cons(1, Cons(2, Cons(3, Nil)))
+    let ys: List<int> = Cons(10, Cons(20, Nil))
+
+    let res = for {
+        x <- xs
+        y <- ys
+    } yield (x + y)
+
+    # Should produce all sums: [1+10, 1+20, 2+10, 2+20, 3+10, 3+20]
+
+    flow print_list(lst: List<int>) {
+        switch lst {
+            case Nil {}
+            case Cons(h, t) {
+                print(h)
+                print_list(t)
+            }
+        }
+    }
+
+    print("Cartesian sums:")
+    print_list(res)
+}
