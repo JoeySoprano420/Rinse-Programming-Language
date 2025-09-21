@@ -1,0 +1,64 @@
+init main {
+    # Option Monad
+    enum Option<T> {
+        Some(T)
+        None
+    }
+
+    impl Option Monad<Option> {
+        flow bind(f) {
+            switch self {
+                case Some(x) { return f(x) }
+                case None    { return None }
+            }
+        }
+
+        flow pure(x) { return Some(x) }
+    }
+
+    let v: Option<int> = Some(5)
+
+    let res = v >>= (x -> Some(x * 2)) >>= (y -> Some(y + 1))
+
+    switch res {
+        case Some(n) {
+            print("Result:")
+            print(n)
+        }
+        case None {
+            print("Empty")
+        }
+    }
+
+    # Result Monad
+    enum Result<T,E> {
+        Ok(T)
+        Err(E)
+    }
+
+    impl Result Monad<Result> {
+        flow bind(f) {
+            switch self {
+                case Ok(x)  { return f(x) }
+                case Err(e) { return Err(e) }
+            }
+        }
+
+        flow pure(x) { return Ok(x) }
+    }
+
+    let r: Result<int, string> = Ok(10)
+
+    let r2 = r >>= (n -> Ok(n + 1)) >>= (m -> Ok(m * 2))
+
+    switch r2 {
+        case Ok(v) {
+            print("Final:")
+            print(v)
+        }
+        case Err(e) {
+            print("Error:")
+            print(e)
+        }
+    }
+}
