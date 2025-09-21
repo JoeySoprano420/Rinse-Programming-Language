@@ -380,3 +380,62 @@ def gen_nasm(ast):
     lines.append("    ret")
     return "\n".join(lines)
 
+def gen_nasm(ast):
+    lines = []
+    lines.append("section .data")
+    lines.append("section .text")
+    lines.append("global _main")
+    lines.append("_main:")
+
+    registers = ["eax", "ebx", "ecx", "edx"]
+    reg_idx = 0
+    var_map = {}
+
+    def emit_expr(expr, var_map, lines):
+        # [existing implementation...]
+        pass
+
+    for stmt in ast.children[0].children:
+        if stmt.tag == DGM_MAP["FOR"]:
+            var = stmt.value
+            start, end, block = stmt.children
+            loop_start = new_label("for_start")
+            loop_end = new_label("for_end")
+
+            emit_expr(start, var_map, lines)
+            lines.append("    mov ecx, eax")  # loop counter
+            emit_expr(end, var_map, lines)
+            lines.append("    mov edx, eax")  # end bound
+
+            lines.append(f"{loop_start}:")
+            lines.append("    cmp ecx, edx")
+            lines.append(f"    jg {loop_end}")
+            # [block body — would be emitted recursively]
+            lines.append("    inc ecx")
+            lines.append(f"    jmp {loop_start}")
+            lines.append(f"{loop_end}:")
+
+        elif stmt.tag == DGM_MAP["WHILE"]:
+            cond, block = stmt.children
+            loop_start = new_label("while_start")
+            loop_end = new_label("while_end")
+
+            lines.append(f"{loop_start}:")
+            emit_expr(cond, var_map, lines)
+            lines.append("    cmp eax, 0")
+            lines.append(f"    je {loop_end}")
+            # [block body — would be emitted recursively]
+            lines.append(f"    jmp {loop_start}")
+            lines.append(f"{loop_end}:")
+
+        elif stmt.tag == DGM_MAP["NEST"]:
+            block = stmt.children[0]
+            lines.append("; enter nest scope")
+            for s in block.children:
+                lines.append("; nested stmt")
+            lines.append("; exit nest scope")
+
+            lines.append("    xor eax, eax")
+            lines.append("    ret")
+        return "\n".join(lines)
+
