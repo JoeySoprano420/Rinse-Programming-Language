@@ -1,4 +1,6 @@
+🌊 Rinse Programming Language
 
+“Noiseless. Hapless. Zero-cost. Progressive Process.”
 
 ---
 
@@ -118,4 +120,14 @@ Execution (inside VESE):
 
 ---
 
+
+✅ Running:
+
+(Bash)
+
+cd Rinse/src
+python rinsec.py ../tests/hello.rn
+
+
+## -----
 
