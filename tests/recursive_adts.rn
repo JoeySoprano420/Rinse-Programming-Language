@@ -1,0 +1,52 @@
+init main {
+    # Recursive Linked List
+    enum List<T> {
+        Nil
+        Cons(T, List<T>)
+    }
+
+    let xs: List<int> = Cons(1, Cons(2, Cons(3, Nil)))
+
+    switch xs {
+        case Cons(h, t) {
+            print("List head:")
+            print(h)
+        }
+        case Nil {
+            print("List empty")
+        }
+    }
+
+    # Recursive Binary Tree
+    enum Tree<T> {
+        Empty
+        Node(T, Tree<T>, Tree<T>)
+    }
+
+    let t: Tree<int> = Node(10, Node(5, Empty, Empty), Node(20, Empty, Empty))
+
+    switch t {
+        case Node(v, l, r) {
+            print("Tree root:")
+            print(v)
+        }
+        case Empty {
+            print("Tree empty")
+        }
+    }
+
+    # Recursive function: list length
+    flow length(lst: List<int>): int {
+        switch lst {
+            case Nil {
+                return 0
+            }
+            case Cons(_, tail) {
+                return 1 + length(tail)
+            }
+        }
+    }
+
+    print("Length of list:")
+    print(length(xs))
+}
