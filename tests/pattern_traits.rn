@@ -1,0 +1,44 @@
+init main {
+    struct Pair {
+        let a: int
+        let b: int
+
+        flow sum() {
+            return self.a + self.b
+        }
+
+        flow sum(scale) {
+            return (self.a + self.b) * scale
+        }
+    }
+
+    let p: Pair = (3, 7)
+    print(p.sum())
+    print(p.sum(2))
+
+    let t = (1, (2, 5))
+    switch t {
+        case (1, (2, _)) {
+            print("nested tuple match")
+        }
+        default {
+            print("no match")
+        }
+    }
+
+    trait Show {
+        flow show()
+    }
+
+    impl Pair Show {
+        flow show() {
+            print("(")
+            print(self.a)
+            print(",")
+            print(self.b)
+            print(")")
+        }
+    }
+
+    p.show()
+}
