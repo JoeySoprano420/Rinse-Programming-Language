@@ -997,3 +997,18 @@ def exec_stmt(self, stmt):
                 raise Exception(f"{sname} missing trait method {r} from {tname}")
         self.impls[(sname, tname)] = methods
 
+def match_pattern(self, pattern, value):
+    if isinstance(pattern.value, tuple) and pattern.value[0] == "struct":
+        _, sname = pattern.value
+        if not isinstance(value, dict) or value.get("__type__") != sname:
+            return False
+        for child, (fname, fval) in zip(pattern.children, [(k,v) for k,v in value.items() if k != "__type__"]):
+            if child.value == "wildcard":
+                continue
+            elif self.is_identifier(child.value):
+                self.set_var(child.value, fval)
+            elif not self.match_pattern(child, fval):
+                return False
+        return True
+    return super().match_pattern(pattern, value)
+
