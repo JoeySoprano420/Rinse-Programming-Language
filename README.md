@@ -197,3 +197,35 @@ _main:
 12
 30
 
+## ---
+
+🔹 Expected Run
+
+(Bash)
+
+cd Rinse/src
+python rinsec.py ../tests/arith.rn
+
+Output:
+
+=== LLVM IR ===
+; ModuleID = "main"
+...
+
+=== NASM ===
+section .data
+section .text
+global _main
+_main:
+    mov eax, 12
+    mov ebx, 30
+    mov eax, eax
+    add eax, ebx
+    push eax
+    call print_int
+    xor eax, eax
+    ret
+
+=== VESE Execution ===
+42
+
