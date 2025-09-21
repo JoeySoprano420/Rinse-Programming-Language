@@ -1,0 +1,32 @@
+init main {
+    struct Point {
+        let x: int
+        let y: int
+    }
+
+    flow make_point(a, b) {
+        return (a, b)
+    }
+
+    flow is_origin(p) {
+        proof p.0 == 0 and p.1 == 0 {
+            return true
+        }
+        return false
+    }
+
+    let p: Point = (3, 7)
+    print(p.x + p.y)
+
+    let t = make_point(0, 0)
+    print(t)
+
+    print(is_origin(t))
+
+    let arr = array(1, 2, 3, 4)
+    print(arr)
+
+    if true and not false {
+        print("Logic works")
+    }
+}
