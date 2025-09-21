@@ -434,3 +434,73 @@ def parse_factor(self):
     else:
         raise SyntaxError(f"Unexpected token {self.peek()}")
 
+def parse_stmt(self):
+    kind, _ = self.peek()
+    if kind == "LET":
+        return self.parse_let()
+    elif kind == "PRINT":
+        return self.parse_print()
+    elif kind == "IF":
+        return self.parse_if()
+    elif kind == "FOR":
+        return self.parse_for()
+    elif kind == "WHILE":
+        return self.parse_while()
+    elif kind == "NEST":
+        return self.parse_nest()
+    elif kind == "FLOW":
+        return self.parse_func_def()
+    elif kind == "RETURN":
+        return self.parse_return()
+    elif kind == "ID":
+        # peek ahead for assignment
+        if self.tokens[self.pos+1][0] == "SYMBOL" and self.tokens[self.pos+1][1] == "[":
+            # arr[index] = expr
+            name = self.eat("ID")[1]
+            self.eat("SYMBOL")  # [
+            index_expr = self.parse_expr()
+            self.eat("SYMBOL")  # ]
+            self.eat("OP")      # =
+            value_expr = self.parse_expr()
+            return ASTNode(DGM_MAP["ASSIGN"], name, [index_expr, value_expr])
+        elif self.tokens[self.pos+1][0] == "OP" and self.tokens[self.pos+1][1] == "=":
+            # x = expr
+            name = self.eat("ID")[1]
+            self.eat("OP")
+            value_expr = self.parse_expr()
+            return ASTNode(DGM_MAP["ASSIGN"], name, [value_expr])
+        elif self.tokens[self.pos+1][0] == "SYMBOL" and self.tokens[self.pos+1][1] == "(":
+            return self.parse_func_call()
+    else:
+        raise SyntaxError(f"Unknown stmt {kind}")
+
+def parse_factor(self):
+    kind, val = self.peek()
+    if kind == "ID":
+        _, name = self.eat("ID")
+        if self.peek()[1] == ".":
+            self.eat("SYMBOL")
+            _, field = self.eat("ID")
+            return ASTNode(DGM_MAP["FIELD"], (name, field))
+        elif self.peek()[1] == "[":
+            self.eat("SYMBOL")  # [
+            index_expr = self.parse_expr()
+            self.eat("SYMBOL")  # ]
+            return ASTNode(DGM_MAP["INDEX"], name, [index_expr])
+        return ASTNode(DGM_MAP["VAR"], name)
+    elif kind == "NUMBER":
+        _, num = self.eat("NUMBER")
+        return ASTNode(DGM_MAP["VALUE"], num)
+    elif kind == "TRUE":
+        self.eat("TRUE")
+        return ASTNode(DGM_MAP["BOOL"], True)
+    elif kind == "FALSE":
+        self.eat("FALSE")
+        return ASTNode(DGM_MAP["BOOL"], False)
+    elif kind == "NOT":
+        self.eat("NOT")
+        expr = self.parse_factor()
+        return ASTNode(DGM_MAP["EXPR"], "not", [expr])
+    else:
+        raise SyntaxError(f"Unexpected token {self.peek()}")
+
