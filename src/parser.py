@@ -817,3 +817,26 @@ def parse_trait(self):
     self.eat("SYMBOL")
     return ASTNode(DGM_MAP["TRAIT_DEF"], (tname, parent), methods)
 
+def parse_pattern(self):
+    if self.peek()[0] == "ID":
+        _, name = self.eat("ID")
+        if self.peek()[1] == "(":
+            self.eat("SYMBOL")
+            fields = []
+            while self.peek()[1] != ")":
+                if self.peek()[0] == "ID":
+                    _, fname = self.eat("ID")
+                    fields.append(ASTNode(DGM_MAP["PATTERN"], fname))
+                elif self.peek()[0] == "UNDERSCORE":
+                    self.eat("UNDERSCORE")
+                    fields.append(ASTNode(DGM_MAP["PATTERN"], "wildcard"))
+                else:
+                    fields.append(self.parse_pattern())
+                if self.peek()[1] == ",":
+                    self.eat("SYMBOL")
+            self.eat("SYMBOL")
+            return ASTNode(DGM_MAP["PATTERN"], ("struct", name), fields)
+        else:
+            return ASTNode(DGM_MAP["PATTERN"], name)
+    return super().parse_pattern()
+
