@@ -59,6 +59,8 @@ DGM_MAP = {
     "TRAIT_IMPL": "cw"
     "DESTRUCT": "cx",
     "TRAIT_EXTENDS": "cy"
+    "GENERIC_TRAIT": "cz",
+    "GENERIC_IMPL": "caa"
    }
 
 class ASTNode:
