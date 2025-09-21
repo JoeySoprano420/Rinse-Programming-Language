@@ -14,6 +14,19 @@ DGM_MAP = {
     "FLOW": 9,
     "ITEM": "a",
     "MACRO": "b",
+    "IF": "c1",
+    "ELSE": "c2",
+    "BOOL": "c3",
+    "STRUCT": "c4",
+    "TUPLE": "c5",
+    "LIST": "c6",
+    "ARRAY": "c7",
+    "NEST": "c8",
+    "DERIVE": "c9",
+    "POLY": "ca",
+    "PROOF": "cb",
+})
+
 }
 
 class ASTNode:
@@ -24,3 +37,4 @@ class ASTNode:
 
     def __repr__(self):
         return f"ASTNode({self.tag}, {self.value}, {self.children})"
+
