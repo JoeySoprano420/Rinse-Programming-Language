@@ -262,3 +262,48 @@ Output:
 
 (because z = 12 * 4 + 2)
 
+## -----
+
+🔹 Example Rinse Program
+
+init main {
+    let x: int = 3
+    let y: int = 4
+
+    if x < y {
+        print(x ^ 2 + 2*x + 1)   # polynomial
+    } else {
+        print(0)
+    }
+
+    proof x > 0 and y > 0 {
+        print("Both positive")
+    }
+
+    struct Point {
+        let x: int
+        let y: int
+    }
+
+    let p: Point = (3, 7)
+    print(p.x + p.y)
+
+    tuple(1, 2, 3)
+    list(4, 5, 6)
+    array(7, 8, 9)
+
+    print(derive(3*x^2 + 2*x + 1, x))
+}
+
+🔹 Expected VESE Output
+
+16   # polynomial evaluated at x=3
+Both positive
+10   # p.x + p.y
+[1, 2, 3]
+[4, 5, 6]
+[7, 8, 9]
+6*x + 2   # symbolic derivative
+
+## -----
+
