@@ -1,0 +1,12 @@
+init main {
+    flow fact(n) {
+        if n <= 1 {
+            return 1
+        } else {
+            return n * fact(n - 1)
+        }
+    }
+
+    let x: int = 5
+    print(fact(x))
+}
