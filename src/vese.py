@@ -906,3 +906,63 @@ def exec_stmt(self, stmt):
         self.set_var(base, obj)
         self.pop_scope()
 
+def match_pattern(self, pattern, value):
+    if pattern.tag == DGM_MAP["VALUE"]:
+        return pattern.value == value
+    elif pattern.tag == DGM_MAP["PATTERN"]:
+        if pattern.value == "tuple":
+            if not isinstance(value, tuple) or len(value) != len(pattern.children):
+                return False
+            return all(self.match_pattern(p, v) for p, v in zip(pattern.children, value))
+
+        elif isinstance(pattern.value, tuple) and pattern.value[0] == "struct":
+            _, sname = pattern.value
+            if not isinstance(value, dict) or value.get("__type__") != sname:
+                return False
+            return True  # deeper field matching to be expanded later
+
+        elif pattern.value == "wildcard":
+            return True
+    return False
+
+class VESE:
+    def __init__(self):
+        self.struct_methods = {}   # {struct_name: {method_name: [overloads]}}
+        self.traits = {}           # {trait_name: [methods]}
+        self.impls = {}            # {(struct, trait): methods}
+
+    def exec_stmt(self, stmt):
+        if stmt.tag == DGM_MAP["METHOD_DEF"]:
+            struct_name, mname = stmt.value
+            if struct_name not in self.struct_methods:
+                self.struct_methods[struct_name] = {}
+            if mname not in self.struct_methods[struct_name]:
+                self.struct_methods[struct_name][mname] = []
+            self.struct_methods[struct_name][mname].append((stmt.children[0], stmt.children[1]))
+
+        elif stmt.tag == DGM_MAP["METHOD_CALL"]:
+            base, mname = stmt.value
+            obj = self.get_var(base)
+            sname = obj.get("__type__", type(obj).__name__)
+            overloads = self.struct_methods.get(sname, {}).get(mname, [])
+            for params, block in overloads:
+                if len(params.value) == len(stmt.children):
+                    self.push_scope()
+                    self.set_var("self", obj)
+                    for p, a in zip(params.value, stmt.children):
+                        self.set_var(p, self.eval_expr(a))
+                    for s in block.children:
+                        self.exec_stmt(s)
+                        if self.return_flag: break
+                    obj = self.get_var("self")
+                    self.set_var(base, obj)
+                    self.pop_scope()
+                    return self.return_value
+
+        elif stmt.tag == DGM_MAP["TRAIT_DEF"]:
+            self.traits[stmt.value] = stmt.children
+
+        elif stmt.tag == DGM_MAP["TRAIT_IMPL"]:
+            sname, tname = stmt.value
+            self.impls[(sname, tname)] = stmt.children
+
