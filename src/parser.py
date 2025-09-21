@@ -563,5 +563,52 @@ def parse_stmt(self):
     else:
         raise SyntaxError(f"Unknown stmt {kind}")
 
+def parse_stmt(self):
+    kind, _ = self.peek()
+    if kind == "SWITCH":
+        return self.parse_switch()
+    elif kind == "CASE":
+        return self.parse_case()
+    elif kind == "DEFAULT":
+        return self.parse_default()
+    elif kind == "ID":
+        # check for field mutation like p.x = expr
+        if self.tokens[self.pos+1][1] == ".":
+            base = self.eat("ID")[1]
+            self.eat("SYMBOL")  # .
+            field = self.eat("ID")[1]
+            self.eat("OP")      # =
+            value_expr = self.parse_expr()
+            return ASTNode(DGM_MAP["FIELD_ASSIGN"], (base, field), [value_expr])
+        # fallback to normal assignment/call
+    return super().parse_stmt()
+
+def parse_switch(self):
+    self.eat("SWITCH")
+    expr = self.parse_expr()
+    self.eat("SYMBOL")  # {
+    cases = []
+    default_block = None
+    while self.peek()[0] != "SYMBOL" or self.peek()[1] != "}":
+        if self.peek()[0] == "CASE":
+            cases.append(self.parse_case())
+        elif self.peek()[0] == "DEFAULT":
+            default_block = self.parse_default()
+        else:
+            raise SyntaxError(f"Unexpected in switch: {self.peek()}")
+    self.eat("SYMBOL")  # }
+    return ASTNode(DGM_MAP["SWITCH"], expr, cases + ([default_block] if default_block else []))
+
+def parse_case(self):
+    self.eat("CASE")
+    match_expr = self.parse_expr()
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["CASE"], match_expr, [block])
+
+def parse_default(self):
+    self.eat("DEFAULT")
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["DEFAULT"], None, [block])
+
 
 
