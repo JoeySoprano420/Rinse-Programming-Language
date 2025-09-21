@@ -389,3 +389,89 @@ class VESE:
             if expr["op"] == "*": return l * r
             if expr["op"] == "/": return l // r
 
+class VESE:
+    def __init__(self):
+        self.registers = {"eax": 0, "ebx": 0, "ecx": 0, "edx": 0}
+        self.stack = []
+        self.call_stack = []
+        self.functions = {}    # name -> (params, block)
+        self.heap = {}
+        self.scope_stack = [{}]
+        self.return_flag = False
+        self.return_value = None
+
+    def push_scope(self): self.scope_stack.append({})
+    def pop_scope(self): self.scope_stack.pop()
+
+    def set_var(self, name, val): self.scope_stack[-1][name] = val
+    def get_var(self, name):
+        for scope in reversed(self.scope_stack):
+            if name in scope: return scope[name]
+        raise NameError(f"Variable {name} not found")
+
+    def define_func(self, name, params, block):
+        self.functions[name] = (params, block)
+
+    def call_func(self, name, args):
+        if name not in self.functions:
+            raise NameError(f"Function {name} not defined")
+        params, block = self.functions[name]
+        self.push_scope()
+        for p, a in zip(params.value, args):
+            self.set_var(p, self.eval_expr(a))
+        self.return_flag = False
+        self.return_value = None
+        for stmt in block.children:
+            self.exec_stmt(stmt)
+            if self.return_flag:
+                break
+        self.pop_scope()
+        return self.return_value
+
+    def exec_stmt(self, stmt):
+        if stmt.tag == DGM_MAP["VAR"]:
+            name, _ = stmt.value
+            self.set_var(name, self.eval_expr(stmt.children[0]))
+        elif stmt.tag == DGM_MAP["FLOW"] and stmt.value == "print":
+            print(self.eval_expr(stmt.children[0]))
+        elif stmt.tag == DGM_MAP["FUNC_DEF"]:
+            params, block = stmt.children
+            self.define_func(stmt.value, params, block)
+        elif stmt.tag == DGM_MAP["FUNC_CALL"]:
+            return self.call_func(stmt.value, stmt.children)
+        elif stmt.tag == DGM_MAP["RETURN"]:
+            self.return_value = self.eval_expr(stmt.children[0])
+            self.return_flag = True
+        elif stmt.tag == DGM_MAP["IF"]:
+            cond, then_block, else_block = stmt.children
+            if self.eval_expr(cond):
+                for s in then_block.children:
+                    self.exec_stmt(s)
+                    if self.return_flag: break
+            elif else_block:
+                for s in else_block.children:
+                    self.exec_stmt(s)
+                    if self.return_flag: break
+
+    def eval_expr(self, expr):
+        if expr.tag == DGM_MAP["VAR"]:
+            return self.get_var(expr.value)
+        elif expr.tag == DGM_MAP["VALUE"]:
+            return expr.value
+        elif expr.tag == DGM_MAP["EXPR"]:
+            left, right = expr.children
+            l = self.eval_expr(left)
+            r = self.eval_expr(right)
+            if expr.value == "+": return l + r
+            if expr.value == "-": return l - r
+            if expr.value == "*": return l * r
+            if expr.value == "/": return l // r
+            if expr.value == "<": return int(l < r)
+            if expr.value == "<=": return int(l <= r)
+            if expr.value == ">": return int(l > r)
+            if expr.value == ">=": return int(l >= r)
+            if expr.value == "==": return int(l == r)
+            if expr.value == "!=": return int(l != r)
+        elif expr.tag == DGM_MAP["FUNC_CALL"]:
+            return self.call_func(expr.value, expr.children)
+
