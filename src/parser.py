@@ -1046,3 +1046,13 @@ def parse_handler(self):
     run_block = self.parse_block()
     return ASTNode(DGM_MAP["HANDLER_DEF"], ename, cases + run_block.children)
 
+def parse_async(self):
+    self.eat("ASYNC")
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["ASYNC_BLOCK"], None, block.children)
+
+def parse_parallel(self):
+    self.eat("PARALLEL")
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["PARALLEL_BLOCK"], None, block.children)
+
