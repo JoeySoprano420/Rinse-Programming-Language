@@ -289,3 +289,94 @@ elif op == "assert":
  if not cond:
      raise AssertionError("Proof failed")
 
+label_counter = 0
+def new_label(prefix="L"):
+    global label_counter
+    label = f"{prefix}{label_counter}"
+    label_counter += 1
+    return label
+
+def gen_nasm(ast):
+    lines = []
+    lines.append("section .data")
+    lines.append("section .text")
+    lines.append("global _main")
+    lines.append("_main:")
+
+    registers = ["eax", "ebx", "ecx", "edx"]
+    reg_idx = 0
+    var_map = {}
+
+    def emit_expr(expr, var_map, lines):
+        if expr.tag == DGM_MAP["VAR"]:
+            lines.append(f"    mov eax, {var_map[expr.value]}")
+        elif expr.tag == DGM_MAP["VALUE"]:
+            lines.append(f"    mov eax, {expr.value}")
+        elif expr.tag == DGM_MAP["BOOL"]:
+            lines.append(f"    mov eax, {1 if expr.value == 'true' else 0}")
+        elif expr.tag == DGM_MAP["EXPR"]:
+            op = expr.value
+            left, right = expr.children
+            emit_expr(left, var_map, lines)
+            lines.append("    push eax")
+            emit_expr(right, var_map, lines)
+            lines.append("    mov ebx, eax")
+            lines.append("    pop eax")
+            if op == "+": lines.append("    add eax, ebx")
+            elif op == "-": lines.append("    sub eax, ebx")
+            elif op == "*": lines.append("    imul eax, ebx")
+            elif op == "/":
+                lines.append("    xor edx, edx")
+                lines.append("    idiv ebx")
+            elif op == "^":  # exponentiation loop
+                lines.append("    mov ecx, ebx")
+                lines.append("    mov ebx, eax")
+                lines.append("    mov eax, 1")
+                pow_loop = new_label("pow")
+                lines.append(f"{pow_loop}:")
+                lines.append("    imul eax, ebx")
+                lines.append("    loop " + pow_loop)
+
+    for stmt in ast.children[0].children:
+        if stmt.tag == DGM_MAP["VAR"]:
+            name, typ = stmt.value
+            reg = registers[reg_idx % len(registers)]
+            reg_idx += 1
+            var_map[name] = reg
+            emit_expr(stmt.children[0], var_map, lines)
+            lines.append(f"    mov {reg}, eax")
+
+        elif stmt.tag == DGM_MAP["FLOW"] and stmt.value == "print":
+            emit_expr(stmt.children[0], var_map, lines)
+            lines.append("    push eax")
+            lines.append("    call print_int")
+
+        elif stmt.tag == DGM_MAP["IF"]:
+            cond, block, else_block = stmt.children
+            emit_expr(cond, var_map, lines)
+            lines.append("    cmp eax, 0")
+            lbl_else, lbl_end = new_label("else"), new_label("endif")
+            lines.append(f"    je {lbl_else}")
+            for s in block.children:
+                lines.append("    ; then branch")
+            lines.append(f"    jmp {lbl_end}")
+            lines.append(f"{lbl_else}:")
+            if else_block:
+                for s in else_block.children:
+                    lines.append("    ; else branch")
+            lines.append(f"{lbl_end}:")
+
+        elif stmt.tag == DGM_MAP["PROOF"]:
+            cond, block = stmt.children
+            emit_expr(cond, var_map, lines)
+            lines.append("    cmp eax, 0")
+            fail_lbl = new_label("fail")
+            lines.append(f"    je {fail_lbl}")
+            for s in block.children:
+                lines.append("    ; proof block")
+            lines.append(f"{fail_lbl}: ; assertion fail")
+
+    lines.append("    xor eax, eax")
+    lines.append("    ret")
+    return "\n".join(lines)
+
