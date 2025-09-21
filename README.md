@@ -227,4 +227,10 @@ _main:
 
 ---
 
-⚡
+⚡Run:
+
+(bash)
+
+$ python rinsec/main.py tests/hello.rns
+42
+
