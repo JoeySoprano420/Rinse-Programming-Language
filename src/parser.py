@@ -392,3 +392,45 @@ def parse_return(self):
     expr = self.parse_expr()
     return ASTNode(DGM_MAP["RETURN"], None, [expr])
 
+def parse_expr(self):
+    node = self.parse_term()
+    while self.peek()[0] == "OP" or self.peek()[0] in ["AND", "OR"]:
+        if self.peek()[0] == "OP" and self.peek()[1] in ["+", "-", "<", ">", "<=", ">=", "==", "!="]:
+            op = self.eat("OP")[1]
+            right = self.parse_term()
+            node = ASTNode(DGM_MAP["EXPR"], op, [node, right])
+        elif self.peek()[0] == "AND":
+            self.eat("AND")
+            right = self.parse_term()
+            node = ASTNode(DGM_MAP["EXPR"], "and", [node, right])
+        elif self.peek()[0] == "OR":
+            self.eat("OR")
+            right = self.parse_term()
+            node = ASTNode(DGM_MAP["EXPR"], "or", [node, right])
+    return node
+
+def parse_factor(self):
+    kind, val = self.peek()
+    if kind == "ID":
+        _, name = self.eat("ID")
+        if self.peek()[1] == ".":
+            self.eat("SYMBOL")
+            _, field = self.eat("ID")
+            return ASTNode(DGM_MAP["FIELD"], (name, field))
+        return ASTNode(DGM_MAP["VAR"], name)
+    elif kind == "NUMBER":
+        _, num = self.eat("NUMBER")
+        return ASTNode(DGM_MAP["VALUE"], num)
+    elif kind == "TRUE":
+        self.eat("TRUE")
+        return ASTNode(DGM_MAP["BOOL"], True)
+    elif kind == "FALSE":
+        self.eat("FALSE")
+        return ASTNode(DGM_MAP["BOOL"], False)
+    elif kind == "NOT":
+        self.eat("NOT")
+        expr = self.parse_factor()
+        return ASTNode(DGM_MAP["EXPR"], "not", [expr])
+    else:
+        raise SyntaxError(f"Unexpected token {self.peek()}")
+
