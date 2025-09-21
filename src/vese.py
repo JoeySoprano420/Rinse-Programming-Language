@@ -475,3 +475,103 @@ class VESE:
         elif expr.tag == DGM_MAP["FUNC_CALL"]:
             return self.call_func(expr.value, expr.children)
 
+class VESE:
+    def __init__(self):
+        self.scope_stack = [{}]
+        self.functions = {}
+        self.return_flag = False
+        self.return_value = None
+
+    def push_scope(self): self.scope_stack.append({})
+    def pop_scope(self): self.scope_stack.pop()
+    def set_var(self, name, val): self.scope_stack[-1][name] = val
+    def get_var(self, name):
+        for scope in reversed(self.scope_stack):
+            if name in scope: return scope[name]
+        raise NameError(f"Variable {name} not found")
+
+    def define_func(self, name, params, block):
+        self.functions[name] = (params, block)
+
+    def call_func(self, name, args):
+        if name not in self.functions:
+            raise NameError(f"Function {name} not defined")
+        params, block = self.functions[name]
+        self.push_scope()
+        for p, a in zip(params.value, args):
+            self.set_var(p, self.eval_expr(a))
+        self.return_flag = False
+        self.return_value = None
+        for stmt in block.children:
+            self.exec_stmt(stmt)
+            if self.return_flag:
+                break
+        self.pop_scope()
+        return self.return_value
+
+    def exec_stmt(self, stmt):
+        if stmt.tag == DGM_MAP["VAR"]:
+            name, _ = stmt.value
+            self.set_var(name, self.eval_expr(stmt.children[0]))
+        elif stmt.tag == DGM_MAP["FLOW"] and stmt.value == "print":
+            print(self.eval_expr(stmt.children[0]))
+        elif stmt.tag == DGM_MAP["FUNC_DEF"]:
+            params, block = stmt.children
+            self.define_func(stmt.value, params, block)
+        elif stmt.tag == DGM_MAP["FUNC_CALL"]:
+            return self.call_func(stmt.value, stmt.children)
+        elif stmt.tag == DGM_MAP["RETURN"]:
+            self.return_value = self.eval_expr(stmt.children[0])
+            self.return_flag = True
+        elif stmt.tag == DGM_MAP["STRUCT"]:
+            struct_name = stmt.value
+            fields = {}
+            for field in stmt.children[0].children:
+                fname, _ = field.value
+                fields[fname] = self.eval_expr(field.children[0])
+            self.set_var(struct_name, fields)
+        elif stmt.tag == DGM_MAP["PROOF"]:
+            cond, block = stmt.children
+            if not self.eval_expr(cond):
+                raise AssertionError("Proof failed in VESE")
+            for s in block.children:
+                self.exec_stmt(s)
+
+    def eval_expr(self, expr):
+        if expr.tag == DGM_MAP["VAR"]:
+            return self.get_var(expr.value)
+        elif expr.tag == DGM_MAP["VALUE"]:
+            return expr.value
+        elif expr.tag == DGM_MAP["BOOL"]:
+            return expr.value
+        elif expr.tag == DGM_MAP["FIELD"]:
+            base, field = expr.value
+            obj = self.get_var(base)
+            return obj[field] if isinstance(obj, dict) else obj[int(field)]
+        elif expr.tag == DGM_MAP["TUPLE"]:
+            return tuple(self.eval_expr(e) for e in expr.children)
+        elif expr.tag == DGM_MAP["LIST"]:
+            return [self.eval_expr(e) for e in expr.children]
+        elif expr.tag == DGM_MAP["ARRAY"]:
+            return [self.eval_expr(e) for e in expr.children]
+        elif expr.tag == DGM_MAP["FUNC_CALL"]:
+            return self.call_func(expr.value, expr.children)
+        elif expr.tag == DGM_MAP["EXPR"]:
+            op = expr.value
+            if op == "not":
+                return not self.eval_expr(expr.children[0])
+            left = self.eval_expr(expr.children[0])
+            right = self.eval_expr(expr.children[1])
+            if op == "+": return left + right
+            if op == "-": return left - right
+            if op == "*": return left * right
+            if op == "/": return left // right
+            if op == "and": return left and right
+            if op == "or": return left or right
+            if op == "<": return left < right
+            if op == "<=": return left <= right
+            if op == ">": return left > right
+            if op == ">=": return left >= right
+            if op == "==": return left == right
+            if op == "!=": return left != right
+
