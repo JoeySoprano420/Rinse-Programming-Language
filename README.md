@@ -1,5 +1,32 @@
 🌊 Rinse Programming Language
 
+## 🚀 Quick Installation & Usage
+
+### Install from PyPI:
+```bash
+pip install rinse-programming-language
+```
+
+### Use the compiler:
+```bash
+rinsec hello.rn
+```
+
+### Create a simple program (`hello.rn`):
+```rinse
+init main {
+    let x: int = 12
+    let y: int = 30
+    print(x)
+    print(y)
+}
+```
+
+### Standalone Executable:
+A standalone executable is available in the `dist/` directory after building.
+
+---
+
 “Noiseless. Gapless. Zero-cost. Progressive Process.”
 
 🌊⚡ **The Rinse Programming Language: A Grand Unified Overview**
