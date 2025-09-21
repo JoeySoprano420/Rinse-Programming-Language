@@ -51,6 +51,10 @@ DGM_MAP = {
     "CASE": "co",
     "DEFAULT": "cp",
     "FIELD_ASSIGN": "cq"
+    "MATCH": "cr",
+    "PATTERN": "cs",
+    "METHOD_DEF": "ct",
+    "METHOD_CALL": "cu"
    }
 
 class ASTNode:
