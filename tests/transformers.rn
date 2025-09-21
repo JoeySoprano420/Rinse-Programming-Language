@@ -1,0 +1,73 @@
+init main {
+    enum Option<T> {
+        Some(T)
+        None
+    }
+
+    enum Result<T,E> {
+        Ok(T)
+        Err(E)
+    }
+
+    enum List<T> {
+        Nil
+        Cons(T, List<T>)
+    }
+
+    # List comprehension
+    let xs: List<int> = Cons(1, Cons(2, Cons(3, Nil)))
+    let ys: List<int> = Cons(10, Cons(20, Nil))
+
+    let sums = [x + y | x <- xs, y <- ys, x < y]
+
+    flow print_list(lst: List<int>) {
+        switch lst {
+            case Nil {}
+            case Cons(h, t) {
+                print(h)
+                print_list(t)
+            }
+        }
+    }
+
+    print("List comprehension results:")
+    print_list(sums)
+
+    # OptionT Example
+    struct OptionT<M> { let inner: M }
+
+    trait Monad<M<_>> {
+        flow bind(f): M
+        flow pure(x): M
+    }
+
+    impl Option Monad<Option> {
+        flow bind(f) {
+            switch self {
+                case Some(x) { return f(x) }
+                case None    { return None }
+            }
+        }
+        flow pure(x) { return Some(x) }
+    }
+
+    impl OptionT Monad<OptionT> {
+        flow bind(f) {
+            self.inner.bind(v -> {
+                switch v {
+                    case Some(x) { return f(x).inner }
+                    case None    { return pure(None).inner }
+                }
+            })
+        }
+
+        flow pure(x) {
+            return OptionT(pure(Some(x)))
+        }
+    }
+
+    let m: OptionT<Option<int>> = OptionT(Some(5))
+    let res = m.bind(x -> OptionT(Some(x * 2)))
+    print("OptionT result:")
+    print(res.inner)
+}
