@@ -1076,3 +1076,18 @@ def match_pattern(self, pattern, value):
             return True
     return super().match_pattern(pattern, value)
 
+def eval_binop(self, op, left, right):
+    if op == ">>=":
+        monad = left
+        f = right  # function closure node
+        # get struct/enum type
+        if isinstance(monad, dict) and "__enum__" in monad:
+            ename = monad["__enum__"]
+            impl = self.impls.get((ename, "Monad"), None)
+            if impl:
+                for stmt in impl:
+                    if stmt.value[1] == "bind":
+                        return self.exec_method(monad, stmt, [f])
+        raise Exception("No monad bind impl")
+    return super().eval_binop(op, left, right)
+
