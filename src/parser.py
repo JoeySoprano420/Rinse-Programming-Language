@@ -126,3 +126,33 @@ def parse_print(self):
     self.eat("SYMBOL")  # )
     return ASTNode(DGM_MAP["FLOW"], "print", [expr])
 
+# parser.py — extended arithmetic
+
+def parse_expr(self):
+    # Pratt/recursive descent (simple for now: left-assoc, same precedence)
+    node = self.parse_term()
+    while self.peek()[0] == "OP" and self.peek()[1] in ["+", "-"]:
+        op = self.eat("OP")[1]
+        right = self.parse_term()
+        node = ASTNode(DGM_MAP["EXPR"], op, [node, right])
+    return node
+
+def parse_term(self):
+    node = self.parse_factor()
+    while self.peek()[0] == "OP" and self.peek()[1] in ["*", "/"]:
+        op = self.eat("OP")[1]
+        right = self.parse_factor()
+        node = ASTNode(DGM_MAP["EXPR"], op, [node, right])
+    return node
+
+def parse_factor(self):
+    kind, val = self.peek()
+    if kind == "ID":
+        _, name = self.eat("ID")
+        return ASTNode(DGM_MAP["VAR"], name)
+    elif kind == "NUMBER":
+        _, num = self.eat("NUMBER")
+        return ASTNode(DGM_MAP["VALUE"], num)
+    else:
+        raise SyntaxError(f"Unexpected token {self.peek()}")
+
