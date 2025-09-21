@@ -733,3 +733,79 @@ def eval_expr(self, expr):
         if op == "==": return l == r
         if op == "!=": return l != r
 
+class VESE:
+    def __init__(self):
+        self.scope_stack = [{}]
+        self.functions = {}
+        self.return_flag = False
+        self.return_value = None
+        self.break_flag = False
+        self.continue_flag = False
+
+    def exec_stmt(self, stmt):
+        if stmt.tag == DGM_MAP["BREAK"]:
+            self.break_flag = True
+            return
+        elif stmt.tag == DGM_MAP["CONTINUE"]:
+            self.continue_flag = True
+            return
+
+        elif stmt.tag == DGM_MAP["FOR"]:
+            var = stmt.value
+            start, end, block = stmt.children
+            s = self.eval_expr(start)
+            e = self.eval_expr(end)
+            for i in range(s, e+1):
+                self.push_scope()
+                self.set_var(var, i)
+                for sstmt in block.children:
+                    self.exec_stmt(sstmt)
+                    if self.return_flag or self.break_flag:
+                        break
+                    if self.continue_flag:
+                        self.continue_flag = False
+                        break
+                self.pop_scope()
+                if self.return_flag or self.break_flag:
+                    break
+            self.break_flag = False  # reset after loop
+
+        elif stmt.tag == DGM_MAP["WHILE"]:
+            cond, block = stmt.children
+            while self.eval_expr(cond):
+                self.push_scope()
+                for sstmt in block.children:
+                    self.exec_stmt(sstmt)
+                    if self.return_flag or self.break_flag:
+                        break
+                    if self.continue_flag:
+                        self.continue_flag = False
+                        break
+                self.pop_scope()
+                if self.return_flag or self.break_flag:
+                    break
+            self.break_flag = False
+
+        elif stmt.tag == DGM_MAP["RETURN"]:
+            self.return_value = self.eval_expr(stmt.children[0])
+            self.return_flag = True
+
+        elif stmt.tag == DGM_MAP["FLOW"] and stmt.value == "print":
+            print(self.eval_expr(stmt.children[0]))
+        # ... keep rest as before ...
+
+    def eval_expr(self, expr):
+        if expr.tag == DGM_MAP["ARRAY"]:
+            return [self.eval_expr(e) for e in expr.children]
+        elif expr.tag == DGM_MAP["LIST"]:
+            return [self.eval_expr(e) for e in expr.children]
+        elif expr.tag == DGM_MAP["TUPLE"]:
+            return tuple(self.eval_expr(e) for e in expr.children)
+        elif expr.tag == DGM_MAP["STRUCT"]:
+            fields = {}
+            for f in expr.children:
+                fname, _ = f.value
+                fields[fname] = self.eval_expr(f.children[0])
+            return fields
+        # ... keep booleans, arithmetic, etc.
+
