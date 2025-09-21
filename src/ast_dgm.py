@@ -36,10 +36,7 @@ DGM_MAP = {
     "DERIVE": "c9",
     "POLY": "ca",
     "PROOF": "cb",
-    
-})
-
-}
+   }
 
 class ASTNode:
     def __init__(self, tag, value=None, children=None):
