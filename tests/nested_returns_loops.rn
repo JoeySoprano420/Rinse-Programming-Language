@@ -1,0 +1,55 @@
+init main {
+    flow make_mat_2D() {
+        return array(
+            array(1, 2, 3),
+            array(4, 5, 6),
+            array(7, 8, 9)
+        )
+    }
+
+    flow make_mat_3D() {
+        return array(
+            make_mat_2D(),
+            make_mat_2D()
+        )
+    }
+
+    flow make_mat_4D() {
+        return array(
+            make_mat_3D(),
+            make_mat_3D()
+        )
+    }
+
+    flow sum_first_row(mat) {
+        let total = 0
+        for i in 0 .. 2 {
+            total = total + mat[0][i]
+        }
+        return total
+    }
+
+    let m2 = make_mat_2D()
+    print(m2)
+
+    let m3 = make_mat_3D()
+    print(m3[0][1][2])   # expect 6
+
+    let m4 = make_mat_4D()
+    print(m4[1][0][2][1]) # expect 8
+
+    print(sum_first_row(m2))
+
+    # while loop with break/continue
+    let x: int = 0
+    while x < 5 {
+        x = x + 1
+        if x == 2 {
+            continue
+        }
+        if x == 4 {
+            break
+        }
+        print(x)
+    }
+}
