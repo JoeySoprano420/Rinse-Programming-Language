@@ -1028,3 +1028,31 @@ class VESE:
 
         # reuse trait enforcement logic
 
+class VESE:
+    def __init__(self):
+        self.enums = {}   # {enum_name: {variant: fields}}
+
+    def exec_stmt(self, stmt):
+        if stmt.tag == DGM_MAP["ENUM_DEF"]:
+            ename, params = stmt.value
+            self.enums[ename] = {v.value[0]: v.value[1] for v in stmt.children}
+
+    def construct_variant(self, ename, vname, values):
+        return {"__enum__": ename, "__variant__": vname, "fields": values}
+
+    def match_pattern(self, pattern, value):
+        if isinstance(pattern.value, tuple) and pattern.value[0] == "struct":
+            _, sname = pattern.value
+            if value.get("__enum__") != sname and value.get("__type__") != sname:
+                return False
+            # handle field binding
+            for child, field in zip(pattern.children, value.get("fields", [])):
+                if child.value == "wildcard":
+                    continue
+                elif self.is_identifier(child.value):
+                    self.set_var(child.value, field)
+                elif not self.match_pattern(child, field):
+                    return False
+            return True
+        return super().match_pattern(pattern, value)
+
