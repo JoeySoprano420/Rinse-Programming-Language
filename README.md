@@ -141,6 +141,59 @@ cd Rinse/src
 
 python rinsec.py ../tests/hello.rn
 
+Output:
+
+=== LLVM IR ===
+; ModuleID = "main"
+define i32 @main() {
+entry:
+  ...
+}
+
+12
+30
+
+
 ## -----
 
+
+🔹 Expected Run
+
+(Bash)
+
+cd Rinse/src
+python rinsec.py ../tests/hello.rn
+
+Output:
+
+(Wasm)
+
+=== LLVM IR ===
+; ModuleID = "main"
+define i32 @main() {
+entry:
+  %x = alloca i32, align 4
+  %y = alloca i32, align 4
+  store i32 12, i32* %x, align 4
+  store i32 30, i32* %y, align 4
+  ...
+}
+
+=== NASM ===
+section .data
+section .text
+global _main
+_main:
+    mov eax, 12
+    mov ebx, 30
+    push eax
+    call print_int
+    push ebx
+    call print_int
+    xor eax, eax
+    ret
+
+=== VESE Execution ===
+12
+30
 
