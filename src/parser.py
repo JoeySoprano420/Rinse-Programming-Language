@@ -253,3 +253,52 @@ def parse_proof(self):
     cond = self.parse_expr()
     block = self.parse_block()
     return ASTNode(DGM_MAP["PROOF"], None, [cond, block])
+
+def parse_stmt(self):
+    kind, _ = self.peek()
+    if kind == "LET":
+        return self.parse_let()
+    elif kind == "PRINT":
+        return self.parse_print()
+    elif kind == "IF":
+        return self.parse_if()
+    elif kind == "FOR":
+        return self.parse_for()
+    elif kind == "WHILE":
+        return self.parse_while()
+    elif kind == "NEST":
+        return self.parse_nest()
+    elif kind == "STRUCT":
+        return self.parse_struct()
+    elif kind == "TUPLE":
+        return self.parse_tuple()
+    elif kind == "LIST":
+        return self.parse_list()
+    elif kind == "ARRAY":
+        return self.parse_array()
+    elif kind == "PROOF":
+        return self.parse_proof()
+    else:
+        raise SyntaxError(f"Unknown stmt {kind}")
+
+def parse_for(self):
+    self.eat("FOR")
+    _, var = self.eat("ID")
+    self.eat("IN")
+    start = self.parse_expr()
+    self.eat("OP")  # ..
+    end = self.parse_expr()
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["FOR"], var, [start, end, block])
+
+def parse_while(self):
+    self.eat("WHILE")
+    cond = self.parse_expr()
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["WHILE"], None, [cond, block])
+
+def parse_nest(self):
+    self.eat("NEST")
+    block = self.parse_block()
+    return ASTNode(DGM_MAP["NEST"], None, [block])
+
