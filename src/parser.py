@@ -917,3 +917,25 @@ def parse_enum(self):
     self.eat("SYMBOL")
     return ASTNode(DGM_MAP["ENUM_DEF"], (ename, type_params), variants)
 
+def parse_trait(self):
+    self.eat("TRAIT")
+    _, tname = self.eat("ID")
+    type_params = []
+    if self.peek()[1] == "<":
+        self.eat("SYMBOL")
+        while self.peek()[1] != ">":
+            _, pname = self.eat("ID")
+            type_params.append(pname)
+            if self.peek()[1] == ",":
+                self.eat("SYMBOL")
+        self.eat("SYMBOL")
+    self.eat("SYMBOL")  # {
+    methods = []
+    while self.peek()[1] != "}":
+        self.eat("FLOW")
+        _, mname = self.eat("ID")
+        self.eat("SYMBOL"); self.eat("SYMBOL")
+        methods.append(mname)
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["GENERIC_HIGHER"], (tname, type_params), methods)
+
