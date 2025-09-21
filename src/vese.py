@@ -143,3 +143,139 @@ class VESE:
             elif op == "ret":
                 return 0
 
+# vese.py — VESE Runtime (full execution engine)
+
+class VESE:
+    def __init__(self):
+        self.registers = {"eax": 0, "ebx": 0, "ecx": 0, "edx": 0}
+        self.stack = []
+        self.flags = {"cmp": 0}
+        self.labels = {}
+        self.pc = 0
+        self.program = []
+        self.heap = {}   # store structs, tuples, lists, arrays
+
+    def load(self, nasm_code: str):
+        """Preprocess NASM-like code into instructions and labels."""
+        self.program = []
+        self.labels = {}
+        for i, line in enumerate(nasm_code.splitlines()):
+            line = line.strip()
+            if not line or line.startswith("section") or line.startswith("global"):
+                continue
+            if line.endswith(":"):  # label
+                self.labels[line[:-1]] = len(self.program)
+            else:
+                self.program.append(line)
+
+    def run(self):
+        """Run program from start to end."""
+        self.pc = 0
+        while self.pc < len(self.program):
+            line = self.program[self.pc]
+            self.exec(line)
+            self.pc += 1
+
+    def exec(self, line: str):
+        parts = line.split()
+        op = parts[0]
+
+        if op == "mov":
+            reg, val = parts[1].strip(","), parts[2]
+            self.registers[reg] = self.registers.get(val, int(val)) if val in self.registers else int(val)
+
+        elif op == "add":
+            r1, r2 = parts[1].strip(","), parts[2]
+            self.registers[r1] += self.registers.get(r2, int(r2))
+
+        elif op == "sub":
+            r1, r2 = parts[1].strip(","), parts[2]
+            self.registers[r1] -= self.registers.get(r2, int(r2))
+
+        elif op == "imul":
+            r1, r2 = parts[1].strip(","), parts[2]
+            self.registers[r1] *= self.registers.get(r2, int(r2))
+
+        elif op == "idiv":
+            r = parts[1]
+            divisor = self.registers.get(r, int(r))
+            if divisor == 0:
+                raise ZeroDivisionError("Division by zero in VESE")
+            self.registers["eax"] //= divisor
+            self.registers["edx"] = self.registers["eax"] % divisor
+
+        elif op == "cmp":
+            r1, r2 = parts[1].strip(","), parts[2]
+            v1 = self.registers.get(r1, int(r1))
+            v2 = self.registers.get(r2, int(r2))
+            self.flags["cmp"] = v1 - v2
+
+        elif op == "je":
+            lbl = parts[1]
+            if self.flags["cmp"] == 0:
+                self.pc = self.labels[lbl] - 1
+
+        elif op == "jne":
+            lbl = parts[1]
+            if self.flags["cmp"] != 0:
+                self.pc = self.labels[lbl] - 1
+
+        elif op == "jg":
+            lbl = parts[1]
+            if self.flags["cmp"] > 0:
+                self.pc = self.labels[lbl] - 1
+
+        elif op == "jl":
+            lbl = parts[1]
+            if self.flags["cmp"] < 0:
+                self.pc = self.labels[lbl] - 1
+
+        elif op == "push":
+            reg = parts[1]
+            self.stack.append(self.registers[reg])
+
+        elif op == "pop":
+            reg = parts[1]
+            self.registers[reg] = self.stack.pop()
+
+        elif op == "call":
+            fn = parts[1]
+            if fn == "print_int":
+                val = self.stack.pop()
+                print(val)
+            elif fn == "print_str":
+                val = self.stack.pop()
+                print(str(val))
+
+        elif op == "xor":
+            r1, r2 = parts[1].strip(","), parts[2]
+            self.registers[r1] = self.registers[r1] ^ self.registers[r2]
+
+        elif op == "pow":
+            base, exp = self.registers["eax"], self.registers["ebx"]
+            self.registers["eax"] = pow(base, exp)
+
+        elif op == "make_tuple":
+            count = int(parts[1])
+            elems = [self.stack.pop() for _ in range(count)][::-1]
+            tup = tuple(elems)
+            self.stack.append(tup)
+            print(tup)
+
+        elif op == "make_list":
+            count = int(parts[1])
+            elems = [self.stack.pop() for _ in range(count)][::-1]
+            lst = list(elems)
+            self.stack.append(lst)
+            print(lst)
+
+        elif op == "make_array":
+            count = int(parts[1])
+            elems = [self.stack.pop() for _ in range(count)][::-1]
+            arr = elems
+            self.stack.append(arr)
+            print(arr)
+
+        elif op == "make_struct":
+            name = parts[1]
+
