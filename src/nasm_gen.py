@@ -439,3 +439,63 @@ def gen_nasm(ast):
             lines.append("    ret")
         return "\n".join(lines)
 
+def gen_nasm(ast):
+    lines = []
+    lines.append("section .data")
+    lines.append("section .text")
+    lines.append("global _main")
+    lines.append("_main:")
+
+    functions = {}
+    var_map = {}
+    registers = ["eax", "ebx", "ecx", "edx"]
+    reg_idx = 0
+
+    def emit_expr(expr, var_map, lines):
+        if expr.tag == DGM_MAP["VAR"]:
+            lines.append(f"    mov eax, {var_map[expr.value]}")
+        elif expr.tag == DGM_MAP["VALUE"]:
+            lines.append(f"    mov eax, {expr.value}")
+        elif expr.tag == DGM_MAP["FIELD"]:
+            base, field = expr.value
+            lines.append(f"    ; load field {field} from {base}")
+        elif expr.tag == DGM_MAP["FUNC_CALL"]:
+            for arg in expr.children[::-1]:
+                emit_expr(arg, var_map, lines)
+                lines.append("    push eax")
+            lines.append(f"    call {expr.value}")
+        elif expr.tag == DGM_MAP["EXPR"]:
+            # [arithmetic same as before...]
+            pass
+
+    for stmt in ast.children[0].children:
+        if stmt.tag == DGM_MAP["FUNC_DEF"]:
+            name = stmt.value
+            params, block = stmt.children
+            lines.append(f"{name}:")
+            for p in params.value:
+                lines.append(f"    ; param {p}")
+            for s in block.children:
+                lines.append("    ; function body stmt")
+            lines.append("    ret")
+
+        elif stmt.tag == DGM_MAP["FUNC_CALL"]:
+            emit_expr(stmt, var_map, lines)
+
+        elif stmt.tag == DGM_MAP["VAR"]:
+            name, typ = stmt.value
+            reg = registers[reg_idx % len(registers)]
+            reg_idx += 1
+            var_map[name] = reg
+            emit_expr(stmt.children[0], var_map, lines)
+            lines.append(f"    mov {reg}, eax")
+
+        elif stmt.tag == DGM_MAP["FLOW"] and stmt.value == "print":
+            emit_expr(stmt.children[0], var_map, lines)
+            lines.append("    push eax")
+            lines.append("    call print_int")
+
+    lines.append("    xor eax, eax")
+    lines.append("    ret")
+    return "\n".join(lines)
+
