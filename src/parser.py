@@ -762,3 +762,58 @@ def parse_impl(self):
     self.eat("SYMBOL")
     return ASTNode(DGM_MAP["TRAIT_IMPL"], (sname, tname), methods)
 
+def parse_let(self):
+    self.eat("LET")
+    if self.peek()[1] == "(":
+        # tuple destructure
+        self.eat("SYMBOL")
+        names = []
+        while self.peek()[1] != ")":
+            _, n = self.eat("ID")
+            names.append(n)
+            if self.peek()[1] == ",":
+                self.eat("SYMBOL")
+        self.eat("SYMBOL")
+        self.eat("OP")  # =
+        expr = self.parse_expr()
+        return ASTNode(DGM_MAP["DESTRUCT"], names, [expr])
+    elif self.peek()[0] == "ID":
+        _, name = self.eat("ID")
+        if self.peek()[1] == "(":
+            # struct destructure like Person(name, age)
+            struct_name = name
+            self.eat("SYMBOL")
+            fields = []
+            while self.peek()[1] != ")":
+                _, fname = self.eat("ID")
+                fields.append(fname)
+                if self.peek()[1] == ",":
+                    self.eat("SYMBOL")
+            self.eat("SYMBOL")
+            self.eat("OP")
+            expr = self.parse_expr()
+            return ASTNode(DGM_MAP["DESTRUCT"], (struct_name, fields), [expr])
+        else:
+            _, typ = self.eat("ID") if self.peek()[0] == "ID" else (None, None)
+            self.eat("OP")
+            expr = self.parse_expr()
+            return ASTNode(DGM_MAP["VAR"], (name, typ), [expr])
+
+def parse_trait(self):
+    self.eat("TRAIT")
+    _, tname = self.eat("ID")
+    parent = None
+    if self.peek()[0] == "EXTENDS":
+        self.eat("EXTENDS")
+        _, parent = self.eat("ID")
+    self.eat("SYMBOL")  # {
+    methods = []
+    while self.peek()[1] != "}":
+        self.eat("FLOW")
+        _, mname = self.eat("ID")
+        self.eat("SYMBOL")  # ()
+        self.eat("SYMBOL")  # )
+        methods.append(mname)
+    self.eat("SYMBOL")
+    return ASTNode(DGM_MAP["TRAIT_DEF"], (tname, parent), methods)
+
