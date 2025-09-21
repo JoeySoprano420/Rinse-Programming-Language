@@ -57,6 +57,8 @@ DGM_MAP = {
     "METHOD_CALL": "cu"
     "TRAIT_DEF": "cv",
     "TRAIT_IMPL": "cw"
+    "DESTRUCT": "cx",
+    "TRAIT_EXTENDS": "cy"
    }
 
 class ASTNode:
