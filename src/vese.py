@@ -1012,3 +1012,19 @@ def match_pattern(self, pattern, value):
         return True
     return super().match_pattern(pattern, value)
 
+class VESE:
+    def __init__(self):
+        self.generic_traits = {}  # { (trait, type_params): methods }
+        self.generic_impls = {}   # { (struct, trait, type_args): methods }
+
+    def exec_stmt(self, stmt):
+        if stmt.tag == DGM_MAP["GENERIC_TRAIT"]:
+            tname, type_params, parent = stmt.value
+            self.generic_traits[(tname, tuple(type_params))] = {"methods": stmt.children, "parent": parent}
+
+        elif stmt.tag == DGM_MAP["GENERIC_IMPL"]:
+            sname, tname, type_args = stmt.value
+            self.generic_impls[(sname, tname, tuple(type_args))] = stmt.children
+
+        # reuse trait enforcement logic
+
