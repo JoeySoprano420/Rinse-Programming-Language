@@ -2,6 +2,9 @@
 # Dodecagram AST (base-12)
 
 DGM_MAP = {
+    "FOR": "cc",
+    "WHILE": "cd",
+    "NEST": "ce",
     "PROGRAM": 0,
     "BLOCK": 1,
     "STMT": 2,
